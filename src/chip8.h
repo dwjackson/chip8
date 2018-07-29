@@ -10,6 +10,8 @@
 #define CHIP8_STACKSIZE 16
 #define CHIP8_DISPLAYH 32
 #define CHIP8_DISPLAYW 64
+#define CHIP8_FONTSTART 0x0
+#define CHIP8_FONTWIDTH 5
 
 typedef unsigned char byte;
 

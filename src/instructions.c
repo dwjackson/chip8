@@ -349,3 +349,16 @@ void chip8_store_bcd(struct chip8 *chip, unsigned short ins)
 	chip->ram[i + 1] = tens;
 	chip->ram[i + 2] = ones;
 }
+
+void chip8_load_i_hexfont(struct chip8 *chip, unsigned short ins)
+{
+	byte x;
+	byte val;
+
+	/* LD F, Vx */
+	x = (ins & 0x0F00) >> 8;
+	val = chip->reg_v[x];
+	if (val <= 0xF) {
+		chip->reg_i = CHIP8_FONTSTART + val * CHIP8_FONTWIDTH;
+	}
+}
