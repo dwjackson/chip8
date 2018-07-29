@@ -19,5 +19,6 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
 void chip8_add_immediate(struct chip8 *chip, unsigned short ins);
 void chip8_add(struct chip8 *chip, unsigned short ins);
 void chip8_cls(struct chip8 *chip, SDL_Renderer *renderer);
+void chip8_ld(struct chip8 *chip, unsigned short ins);
 
 #endif /* INSTRUCTIONS_H */

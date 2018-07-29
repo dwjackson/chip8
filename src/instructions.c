@@ -193,3 +193,10 @@ void chip8_cls(struct chip8 *chip, SDL_Renderer *renderer)
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 }
+
+void chip8_ld(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	chip->reg_v[x] = chip->reg_v[y];
+}
