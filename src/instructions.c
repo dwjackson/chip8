@@ -1,7 +1,6 @@
 #include "instructions.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDL.h"
 #include "chip8.h"
 
 static int chip8_pushpc(struct chip8 *chip)

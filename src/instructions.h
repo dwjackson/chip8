@@ -2,7 +2,6 @@
 #define INSTRUCTIONS_H
 
 #include "chip8.h"
-#include "SDL.h"
 
 #define CHIP8_PIXEL_HEIGHT 10
 #define CHIP8_PIXEL_WIDTH 10
