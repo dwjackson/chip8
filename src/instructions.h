@@ -25,5 +25,6 @@ void chip8_load_from_dt(struct chip8* chip, unsigned short ins);
 void chip8_load_dt(struct chip8 *chip, unsigned short ins);
 void chip8_load_st(struct chip8 *chip, unsigned short ins);
 void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins);
+void chip8_store_bcd(struct chip8 *chip, unsigned short ins);
 
 #endif /* INSTRUCTIONS_H */
