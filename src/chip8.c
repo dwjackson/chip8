@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "chip8.h"
+#include "instructions.h"
 #include "SDL.h"
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
@@ -17,8 +18,6 @@ int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
 void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
-int chip8_pushpc(struct chip8 *chip);
-int chip8_poppc(struct chip8 *chip);
 
 int main(int argc, char *argv[])
 {
@@ -156,8 +155,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		if (y == 0x00) {
 			/* NOP */
 		} else if (y == 0xEE) {
-			/* RET */
-			chip8_poppc(chip);
+			chip8_ret(chip);
 		} else if (y == 0xFD) {
 			/* EXIT */
 			return 1;
@@ -173,10 +171,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		}
 		chip->pc = addr;
 	} else if (nibble_h == 0x2) {
-		/* CALL addr */
-		addr = ins & 0x0FFF;
-		chip8_pushpc(chip);
-		chip->pc = addr;
+		chip8_call(chip, ins);
 	} else if (nibble_h == 0x3) {
 		/* SE Vx, byte */
 		x = (ins & 0x0F00) >> 8;
@@ -339,22 +334,3 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	render_display(chip, renderer);
 }
 
-int chip8_pushpc(struct chip8 *chip)
-{
-	if (chip->sp + 1 > CHIP8_STACKSIZE) {
-		return 1;
-	}
-	chip->sp++;
-	chip->stack[chip->sp] = chip->pc;
-	return 0;
-}
-
-int chip8_poppc(struct chip8 *chip)
-{
-	if (chip->sp - 1 < 0) {
-		return 1;
-	}
-	chip->pc = chip->stack[chip->sp];
-	chip->sp--;
-	return 0;
-}

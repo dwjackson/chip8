@@ -2,8 +2,8 @@ CFLAGS = -g -O0 -Wall -Wextra -ansi
 
 all: dis8 chip8 asm8 txt2hex
 
-chip8: chip8.c
-	cc $(CFLAGS) -I/usr/include/SDL2 -o chip8 chip8.c -lSDL2
+chip8: chip8.c instructions.c
+	cc $(CFLAGS) -I/usr/include/SDL2 -o chip8 chip8.c instructions.c -lSDL2
 
 dis8: dis8.c
 	cc $(CFLAGS) -o dis8 dis8.c
