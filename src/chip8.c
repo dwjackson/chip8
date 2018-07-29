@@ -139,10 +139,8 @@ static void store_bcd(struct chip8 *chip, unsigned short ins)
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
 	byte nibble_h;
-	byte x;
 	byte y;
 	byte n;
-	int i;
 
 	nibble_h = (ins & 0xF000) >> 12;
 	if (nibble_h == 0x0) {
@@ -185,7 +183,6 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	} else if (nibble_h == 0xD) {
 		chip8_draw(chip, ins, renderer);
 	} else if (nibble_h == 0xF) {
-		x = (ins & 0x0F00) >> 8;
 		y = ins & 0x00FF;
 		if (y == 0x07) {
 			chip8_load_from_dt(chip, ins);
@@ -202,10 +199,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			/* LD B, Vx */
 			store_bcd(chip, ins);
 		} else if (y == 0x65) {
-			/* LD Vx, [I] */
-			for (i = 0; i < x; i++) {
-				chip->reg_v[i] = chip->ram[chip->reg_i + i];
-			}
+			chip8_load_range_from_i(chip, ins);
 		} else {
 			fprintf(stderr, "Unrecognized instruction: 0x%04X\n",
 				ins);

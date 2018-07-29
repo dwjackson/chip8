@@ -319,3 +319,14 @@ void chip8_load_st(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	chip->st = chip->reg_v[x];
 }
+
+void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	int i;
+
+	/* LD Vx, [I] */
+	for (i = 0; i < x; i++) {
+		chip->reg_v[i] = chip->ram[chip->reg_i + i];
+	}
+}
