@@ -2,6 +2,12 @@
 #define INSTRUCTIONS_H
 
 #include "chip8.h"
+#include "SDL.h"
+
+#define CHIP8_PIXEL_HEIGHT 10
+#define CHIP8_PIXEL_WIDTH 10
+
+#define BIT(b, i) (((b) & (0x1 << (i))) >> (i))
 
 void chip8_ret(struct chip8 *chip);
 void chip8_call(struct chip8 *chip, unsigned short ins);
@@ -9,5 +15,6 @@ void chip8_jump(struct chip8 *chip, unsigned short ins);
 void chip8_sne(struct chip8 *chip, unsigned short ins);
 void chip8_load_i(struct chip8 *chip, unsigned short ins);
 void chip8_load_immediate(struct chip8 *chip, unsigned short ins);
+void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
 
 #endif /* INSTRUCTIONS_H */

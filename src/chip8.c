@@ -7,9 +7,6 @@
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define LOAD_BUFSIZE 512
-#define BIT(b, i) (((b) & (0x1 << (i))) >> (i))
-#define CHIP8_PIXEL_HEIGHT 10
-#define CHIP8_PIXEL_WIDTH 10
 #define DISPLAY_WPIXELS 64
 #define DISPLAY_HPIXELS 32
 
@@ -17,7 +14,6 @@ void chip8_init(struct chip8 *chip);
 int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
-void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
 
 int main(int argc, char *argv[])
 {
@@ -232,85 +228,5 @@ static void print_sprite(byte *sprite, int n)
 		}
 		printf("\n");
 	}
-}
-
-static void render_black(SDL_Renderer *renderer)
-{
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-}
-
-static void render_white(SDL_Renderer *renderer)
-{
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-}
-
-static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
-{
-	SDL_Rect pixel;
-	int i, j;
-	byte bit;
-
-	for (i = 0; i < CHIP8_DISPLAYH; i++) {
-		for (j = 0; j < CHIP8_DISPLAYW; j++) {
-			bit = chip->display[i][j];
-			pixel.x = j * CHIP8_PIXEL_WIDTH;
-			pixel.y = i * CHIP8_PIXEL_HEIGHT;
-			pixel.w = CHIP8_PIXEL_WIDTH;
-			pixel.h = CHIP8_PIXEL_HEIGHT;
-
-			if (bit == 0) {
-				render_black(renderer);
-			} else {
-				render_white(renderer);
-			}
-
-			if (SDL_RenderFillRect(renderer, &pixel) != 0) {
-				fprintf(stderr, "SDL_RenderFillRect failed: %s\n",
-					SDL_GetError());
-			}
-		}
-	}
-	SDL_RenderPresent(renderer);
-}
-
-void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
-{
-	byte x, y;
-	byte n; /* Sprite length */
-	unsigned short addr;
-	byte vx, vy;
-	byte sprite[CHIP8_SPRITEBYTES];
-	int i, j;
-	int bit;
-
-	x = (ins & 0x0F00) >> 8;
-	y = (ins & 0x00F0) >> 4;
-	n = ins & 0x000F;
-	if (n > CHIP8_SPRITEBYTES) {
-		fprintf(stderr, "Invalid sprite length: 0x%04X\n", ins);
-		exit(EXIT_FAILURE);
-	}
-
-	addr = chip->reg_i;
-	if (addr < CHIP8_PROGSTART || addr >= CHIP8_RAMBYTES) {
-		fprintf(stderr, "Invalid draw address: 0x%04X\n", addr);
-		exit(EXIT_FAILURE);
-	}
-
-	vx = chip->reg_v[x];
-	vy = chip->reg_v[y];
-
-	for (i = 0; i < n; i++) {
-		sprite[i] = chip->ram[addr + i];
-	}
-	/* print_sprite(sprite, n); */ /* DEBUG */
-
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < 8; j++) {
-			bit = BIT(sprite[i], j);
-			chip->display[vy + i][vx + j] = bit;
-		}
-	}
-	render_display(chip, renderer);
 }
 
