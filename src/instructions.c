@@ -125,6 +125,11 @@ static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
 	SDL_RenderPresent(renderer);
 }
 
+static int is_within_display(int x, int y)
+{
+	return x >= 0 && y >= 0 && x <= CHIP8_DISPLAYW && y <= CHIP8_DISPLAYH;
+}
+
 /* DRW Vx, Vy, byte */
 void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
@@ -135,6 +140,7 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	byte sprite[CHIP8_SPRITEBYTES];
 	int i, j;
 	int bit;
+	int display_x, display_y;
 
 	x = (ins & 0x0F00) >> 8;
 	y = (ins & 0x00F0) >> 4;
@@ -160,8 +166,12 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < 8; j++) {
-			bit = BIT(sprite[i], j);
-			chip->display[vy + i][vx + j] = bit;
+			display_x = vx + j;
+			display_y = vy + i;
+			if (is_within_display(display_x, display_y)) {
+				bit = BIT(sprite[i], j);
+				chip->display[display_y][display_x] = bit;
+			}
 		}
 	}
 	render_display(chip, renderer);
