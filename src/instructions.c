@@ -187,3 +187,9 @@ void chip8_add(struct chip8 *chip, unsigned short ins)
 	/* ADD Vx, Vy */
 	chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
 }
+
+void chip8_cls(struct chip8 *chip, SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
+}

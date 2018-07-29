@@ -149,6 +149,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		y = ins & 0x00FF;
 		if (y == 0x00) {
 			/* NOP */
+		} else if (y == 0x0E) {
+			chip8_cls(chip, renderer);
 		} else if (y == 0xEE) {
 			chip8_ret(chip);
 		} else if (y == 0xFD) {
