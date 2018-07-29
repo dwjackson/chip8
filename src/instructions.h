@@ -21,5 +21,7 @@ void chip8_add(struct chip8 *chip, unsigned short ins);
 void chip8_cls(struct chip8 *chip, SDL_Renderer *renderer);
 void chip8_ld(struct chip8 *chip, unsigned short ins);
 void chip8_waitkey(struct chip8 *chip, unsigned short ins);
+void chip8_load_from_dt(struct chip8* chip, unsigned short ins);
+void chip8_load_dt(struct chip8 *chip, unsigned short ins);
 
 #endif /* INSTRUCTIONS_H */
