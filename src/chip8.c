@@ -144,7 +144,6 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	byte x;
 	byte y;
 	byte n;
-	unsigned short val;
 	int i;
 
 	nibble_h = (ins & 0xF000) >> 12;
@@ -188,9 +187,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			abort();
 		}
 	} else if (nibble_h == 0xA) {
-		/* LD I, addr */
-		val = ins & 0x0FFF;
-		chip->reg_i = val;
+		chip8_load_i(chip, ins);
 	} else if (nibble_h == 0xD) {
 		/* DRW Vx, Vy, byte */
 		chip8_draw(chip, ins, renderer);

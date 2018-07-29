@@ -51,7 +51,7 @@ void chip8_jump(struct chip8 *chip, unsigned short ins)
 }
 
 /* 3xkk - skip next instruction if Vx = kk */
-void chip8_sne(struct chip8 *chip, unsigned int ins)
+void chip8_sne(struct chip8 *chip, unsigned short ins)
 {
 	byte x, y;
 	byte regval;
@@ -63,4 +63,12 @@ void chip8_sne(struct chip8 *chip, unsigned int ins)
 	if (regval == y) {
 		chip->pc += 2;
 	}
+}
+
+void chip8_load_i(struct chip8 *chip, unsigned short ins)
+{
+	unsigned short addr;
+	/* LD I, addr */
+	addr = ins & 0x0FFF;
+	chip->reg_i = addr;
 }
