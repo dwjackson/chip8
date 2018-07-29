@@ -72,3 +72,13 @@ void chip8_load_i(struct chip8 *chip, unsigned short ins)
 	addr = ins & 0x0FFF;
 	chip->reg_i = addr;
 }
+
+void chip8_load_immediate(struct chip8 *chip, unsigned short ins)
+{
+	byte x, y;
+
+	/* LD Vx, byte */
+	x = (ins & 0x0F00) >> 8;
+	y = ins & 0x00FF;
+	chip->reg_v[x] = y;
+}
