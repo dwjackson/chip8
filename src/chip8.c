@@ -4,6 +4,7 @@
 #include "chip8.h"
 #include "instructions.h"
 #include "SDL.h"
+#include <time.h>
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define LOAD_BUFSIZE 512
@@ -69,6 +70,7 @@ void chip8_init(struct chip8 *chip)
 {
 	int i, j;
 	unsigned short addr;
+	time_t now;
 	byte fontchars[16][CHIP8_FONTWIDTH] = {
 		{ 0xF0, 0x90, 0x90, 0x90, 0xF0 }, /* 0 */
 		{ 0x20, 0x60, 0x20, 0x20, 0x70 }, /* 1 */
@@ -105,6 +107,8 @@ void chip8_init(struct chip8 *chip)
 			chip->ram[addr] = fontchars[i][j];
 		}
 	}
+	now = time(NULL);
+	srand(now);
 }
 
 int chip8_load(struct chip8 *chip, char *file_name)
@@ -186,6 +190,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		}
 	} else if (nibble_h == 0xA) {
 		chip8_load_i(chip, ins);
+	} else if (nibble_h == 0xC) {
+		chip8_rnd(chip, ins);
 	} else if (nibble_h == 0xD) {
 		chip8_draw(chip, ins, renderer);
 	} else if (nibble_h == 0xF) {

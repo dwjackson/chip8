@@ -364,3 +364,13 @@ void chip8_load_i_hexfont(struct chip8 *chip, unsigned short ins)
 		chip->reg_i = CHIP8_FONTSTART + val * CHIP8_FONTWIDTH;
 	}
 }
+
+void chip8_rnd(struct chip8 *chip, unsigned short ins)
+{
+	/* RND Vx, byte */
+	byte x = (ins & 0x0F00) >> 8;
+	byte b = ins & 0x00FF;
+	byte r = rand();
+	chip->reg_v[x] = r & b;
+}
+
