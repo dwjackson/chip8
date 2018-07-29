@@ -15,6 +15,13 @@
 
 typedef unsigned char byte;
 
+struct chip8;
+
+struct chip8_renderer {
+	void *data;
+	void (*render_display)(struct chip8 *chip);
+};
+
 struct chip8 {
 	byte reg_v[CHIP8_REGCOUNT];
 	byte vf; 
@@ -27,6 +34,7 @@ struct chip8 {
 	unsigned short stack[CHIP8_STACKSIZE];
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];
 	byte (*waitkey)();
+	struct chip8_renderer *renderer;
 };
 
 #endif /* CHIP8_H */

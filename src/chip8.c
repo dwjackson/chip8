@@ -11,12 +11,13 @@
 #define DISPLAY_WPIXELS 64
 #define DISPLAY_HPIXELS 32
 
-void chip8_init(struct chip8 *chip, byte (*waitkey)());
+void chip8_init(struct chip8 *chip, byte (*waitkey)(),
+	struct chip8_renderer *renderer);
 int chip8_load(struct chip8 *chip, char *file_name);
-void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
+void chip8_exec(struct chip8 *chip);
 int chip8_decode(struct chip8 *chip, unsigned short ins);
 
-static void render_display(struct chip8 *chip, SDL_Renderer *renderer);
+static void render_display(struct chip8 *chip);
 static void render_black(SDL_Renderer *renderer);
 static void render_white(SDL_Renderer *renderer);
 byte waitkey();
@@ -33,15 +34,12 @@ int main(int argc, char *argv[])
 	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
 	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
 	int ret;
+	struct chip8_renderer c8renderer;
 
 	if (argc < 2) {
 		printf(USAGE_FMT, argv[0]);
 		exit(EXIT_FAILURE);
 	}
-
-	chip8_init(&chip, &waitkey);
-	file_name = argv[1];
-	chip8_load(&chip, file_name);
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		perror("SDL_Init");
@@ -54,10 +52,16 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	c8renderer.data = renderer;
+	c8renderer.render_display = render_display;
+	chip8_init(&chip, &waitkey, &c8renderer);
+	file_name = argv[1];
+	chip8_load(&chip, file_name);
+
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
-	chip8_exec(&chip, renderer);
+	chip8_exec(&chip);
 	while (!done) {
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
@@ -71,7 +75,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void chip8_init(struct chip8 *chip, byte (*waitkey)())
+void chip8_init(struct chip8 *chip, byte (*waitkey)(),
+	struct chip8_renderer *renderer)
 {
 	int i, j;
 	unsigned short addr;
@@ -113,6 +118,7 @@ void chip8_init(struct chip8 *chip, byte (*waitkey)())
 		}
 	}
 	chip->waitkey = waitkey;
+	chip->renderer = renderer;
 	now = time(NULL);
 	srand(now);
 }
@@ -137,7 +143,7 @@ int chip8_load(struct chip8 *chip, char *file_name)
 	return 0;
 }
 
-void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
+void chip8_exec(struct chip8 *chip)
 {
 	unsigned short ins;
 
@@ -149,7 +155,7 @@ void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
 		if (chip8_decode(chip, ins) != 0) {
 			break;
 		}
-		render_display(chip, renderer);
+		render_display(chip);
 	}
 }
 
@@ -231,9 +237,10 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 	return 0;
 }
 
-static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
+static void render_display(struct chip8 *chip)
 {
 	SDL_Rect pixel;
+	SDL_Renderer *renderer = chip->renderer->data;
 	int i, j;
 	byte bit;
 
