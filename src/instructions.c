@@ -157,7 +157,8 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	byte sprite[CHIP8_SPRITEBYTES];
 	int i, j;
 	int bit;
-	int display_x, display_y;
+	int currbit;
+	int disp_x, disp_y;
 
 	x = (ins & 0x0F00) >> 8;
 	y = (ins & 0x00F0) >> 4;
@@ -168,9 +169,9 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	}
 
 	addr = chip->reg_i;
-	if (addr < CHIP8_PROGSTART || addr >= CHIP8_RAMBYTES) {
+	if (addr >= CHIP8_RAMBYTES) {
 		fprintf(stderr, "Invalid draw address: 0x%04X\n", addr);
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	vx = chip->reg_v[x];
@@ -183,11 +184,12 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 
 	for (i = 0; i < n; i++) {
 		for (j = 7; j >= 0; j--) {
-			display_x = vx + (7 - j);
-			display_y = vy + i;
-			if (is_within_display(display_x, display_y)) {
+			disp_x = vx + (7 - j);
+			disp_y = vy + i;
+			if (is_within_display(disp_x, disp_y)) {
 				bit = BIT(sprite[i], j);
-				chip->display[display_y][display_x] = bit;
+				currbit = chip->display[disp_y][disp_x];
+				chip->display[disp_y][disp_x] = bit ^ currbit;
 			}
 		}
 	}

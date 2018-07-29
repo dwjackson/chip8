@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 void chip8_init(struct chip8 *chip)
 {
 	int i, j;
+	unsigned short addr;
 	byte fontchars[16][CHIP8_FONTWIDTH] = {
 		{ 0xF0, 0x90, 0x90, 0x90, 0xF0 }, /* 0 */
 		{ 0x20, 0x60, 0x20, 0x20, 0x70 }, /* 1 */
@@ -100,7 +101,8 @@ void chip8_init(struct chip8 *chip)
 	}
 	for (i = 0; i < 16; i++) {
 		for (j = 0; j < 5; j++) {
-			chip->ram[CHIP8_FONTSTART + i] = fontchars[i][j];
+			addr = CHIP8_FONTSTART + i * CHIP8_FONTWIDTH + j;
+			chip->ram[addr] = fontchars[i][j];
 		}
 	}
 }
