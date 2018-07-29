@@ -20,6 +20,7 @@ struct chip8 {
 	byte ram[CHIP8_RAMBYTES];
 	unsigned short pc;
 	unsigned int dt;
+	unsigned int st;
 	unsigned short sp;
 	unsigned short stack[CHIP8_STACKSIZE];
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];

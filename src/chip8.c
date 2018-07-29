@@ -193,6 +193,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			chip8_waitkey(chip, ins);
 		} else if (y == 0x15) {
 			chip8_load_dt(chip, ins);
+		} else if (y == 0x18) {
+			chip8_load_st(chip, ins);
 		} else if (y == 0x29) {
 			/* LD F, Vx */
 			/* TODO */

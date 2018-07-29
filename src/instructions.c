@@ -284,12 +284,21 @@ void chip8_waitkey(struct chip8 *chip, unsigned short ins)
 
 void chip8_load_from_dt(struct chip8* chip, unsigned short ins)
 {
+	/* LD Vx, DT */
 	byte x = (ins & 0x0F00) >> 8;
 	chip->reg_v[x] = chip->dt;
 }
 
 void chip8_load_dt(struct chip8 *chip, unsigned short ins)
 {
+	/* LD DT, Vx */
 	byte x = (ins & 0x0F00) >> 8;
 	chip->dt = chip->reg_v[x];
+}
+
+void chip8_load_st(struct chip8 *chip, unsigned short ins)
+{
+	/* LD ST, Vx */
+	byte x = (ins & 0x0F00) >> 8;
+	chip->st = chip->reg_v[x];
 }
