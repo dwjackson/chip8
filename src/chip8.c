@@ -16,6 +16,10 @@ int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
 
+static void render_display(struct chip8 *chip, SDL_Renderer *renderer);
+static void render_black(SDL_Renderer *renderer);
+static void render_white(SDL_Renderer *renderer);
+
 int main(int argc, char *argv[])
 {
 	struct chip8 chip;
@@ -143,6 +147,7 @@ void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
 		if (decode(chip, ins, renderer) != 0) {
 			break;
 		}
+		render_display(chip, renderer);
 	}
 }
 
@@ -158,7 +163,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		if (y == 0x00) {
 			/* NOP */
 		} else if (y == 0x0E) {
-			chip8_cls(chip, renderer);
+			chip8_cls(chip);
 		} else if (y == 0xEE) {
 			chip8_ret(chip);
 		} else if (y == 0xFD) {
@@ -195,7 +200,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	} else if (nibble_h == 0xC) {
 		chip8_rnd(chip, ins);
 	} else if (nibble_h == 0xD) {
-		chip8_draw(chip, ins, renderer);
+		chip8_draw(chip, ins);
 	} else if (nibble_h == 0xF) {
 		y = ins & 0x00FF;
 		if (y == 0x07) {
@@ -222,5 +227,45 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	}
 
 	return 0;
+}
+
+static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
+{
+	SDL_Rect pixel;
+	int i, j;
+	byte bit;
+
+	for (i = 0; i < CHIP8_DISPLAYH; i++) {
+		for (j = 0; j < CHIP8_DISPLAYW; j++) {
+			bit = chip->display[i][j];
+			pixel.x = j * CHIP8_PIXEL_WIDTH;
+			pixel.y = i * CHIP8_PIXEL_HEIGHT;
+			pixel.w = CHIP8_PIXEL_WIDTH;
+			pixel.h = CHIP8_PIXEL_HEIGHT;
+
+			if (bit == 0) {
+				render_black(renderer);
+			} else {
+				render_white(renderer);
+			}
+
+			if (SDL_RenderFillRect(renderer, &pixel) != 0) {
+				fprintf(stderr,
+					"SDL_RenderFillRect failed: %s\n",
+					SDL_GetError());
+			}
+		}
+	}
+	SDL_RenderPresent(renderer);
+}
+
+static void render_black(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+}
+
+static void render_white(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
 

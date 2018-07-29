@@ -96,51 +96,6 @@ void chip8_load_immediate(struct chip8 *chip, unsigned short ins)
 	chip->reg_v[x] = y;
 }
 
-static void render_black(SDL_Renderer *renderer)
-{
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-}
-
-static void render_white(SDL_Renderer *renderer)
-{
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-}
-
-static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
-{
-	SDL_Rect pixel;
-	int i, j;
-	byte bit;
-
-	for (i = 0; i < CHIP8_DISPLAYH; i++) {
-		for (j = 0; j < CHIP8_DISPLAYW; j++) {
-			bit = chip->display[i][j];
-			pixel.x = j * CHIP8_PIXEL_WIDTH;
-			pixel.y = i * CHIP8_PIXEL_HEIGHT;
-			pixel.w = CHIP8_PIXEL_WIDTH;
-			pixel.h = CHIP8_PIXEL_HEIGHT;
-
-			if (bit == 0) {
-				render_black(renderer);
-			} else {
-				render_white(renderer);
-			}
-
-			if (SDL_RenderFillRect(renderer, &pixel) != 0) {
-				fprintf(stderr,
-					"SDL_RenderFillRect failed: %s\n",
-					SDL_GetError());
-			}
-		}
-	}
-	SDL_RenderPresent(renderer);
-}
-
-static int is_within_display(int x, int y)
-{
-	return x >= 0 && y >= 0 && x <= CHIP8_DISPLAYW && y <= CHIP8_DISPLAYH;
-}
-
 static void print_sprite(byte *sprite, int n)
 {
 	int i, j;
@@ -158,8 +113,13 @@ static void print_sprite(byte *sprite, int n)
 	}
 }
 
+static int is_within_display(int x, int y)
+{
+	return x >= 0 && y >= 0 && x <= CHIP8_DISPLAYW && y <= CHIP8_DISPLAYH;
+}
+
 /* DRW Vx, Vy, byte */
-void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
+void chip8_draw(struct chip8 *chip, unsigned short ins)
 {
 	byte x, y;
 	byte n; /* Sprite length */
@@ -204,7 +164,6 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			}
 		}
 	}
-	render_display(chip, renderer);
 }
 
 void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
@@ -228,10 +187,14 @@ void chip8_add(struct chip8 *chip, unsigned short ins)
 	chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
 }
 
-void chip8_cls(struct chip8 *chip, SDL_Renderer *renderer)
+void chip8_cls(struct chip8 *chip)
 {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
+	int i, j;
+	for (i = 0; i < CHIP8_DISPLAYH; i++) {
+		for (j = 0; j < CHIP8_DISPLAYW; j++) {
+			chip->display[i][j] = 0x0;
+		}
+	}
 }
 
 void chip8_ld(struct chip8 *chip, unsigned short ins)
