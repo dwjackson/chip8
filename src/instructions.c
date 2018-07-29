@@ -130,6 +130,23 @@ static int is_within_display(int x, int y)
 	return x >= 0 && y >= 0 && x <= CHIP8_DISPLAYW && y <= CHIP8_DISPLAYH;
 }
 
+static void print_sprite(byte *sprite, int n)
+{
+	int i, j;
+	int bit;
+	for (i = 0; i < n; i++) {
+		for (j = 7; j >= 0; j--) {
+			bit = BIT(sprite[i], j);
+			if (bit == 1) {
+				printf("*");
+			} else {
+				printf(" ");
+			}
+		}
+		printf("\n");
+	}
+}
+
 /* DRW Vx, Vy, byte */
 void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
@@ -165,8 +182,8 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	/* print_sprite(sprite, n); */ /* DEBUG */
 
 	for (i = 0; i < n; i++) {
-		for (j = 0; j < 8; j++) {
-			display_x = vx + j;
+		for (j = 7; j >= 0; j--) {
+			display_x = vx + (7 - j);
 			display_y = vy + i;
 			if (is_within_display(display_x, display_y)) {
 				bit = BIT(sprite[i], j);

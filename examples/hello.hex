@@ -16,6 +16,6 @@ A231 # Load the address of "O" into I
 D015 # Draw "O"
 00FD # EXIT
 88 88 F8 88 88 # H
-F8 08 F8 08 F8 # E
-08 08 08 08 F8 # L
+F8 80 F8 80 F8 # E
+80 80 80 80 F8 # L
 F8 88 88 88 F8 # O

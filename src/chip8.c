@@ -218,20 +218,3 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	return 0;
 }
 
-static void print_sprite(byte *sprite, int n)
-{
-	int i, j;
-	int bit;
-	for (i = 0; i < n; i++) {
-		for (j = 0; j < 8; j++) {
-			bit = BIT(sprite[i], j);
-			if (bit == 1) {
-				printf("*");
-			} else {
-				printf(" ");
-			}
-		}
-		printf("\n");
-	}
-}
-
