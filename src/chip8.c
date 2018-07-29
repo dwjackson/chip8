@@ -129,6 +129,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	byte n;
 	unsigned short val;
 	byte regval;
+	int i;
 
 	nibble_h = (ins & 0xF000) >> 12;
 	if (nibble_h == 0x0) {
@@ -170,6 +171,11 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		x = (ins & 0x0F00) >> 8;
 		y = ins & 0x00FF;
 		chip->reg_v[x] = y;
+	} else if (nibble_h == 0x7) {
+		/* ADD Vx, byte */
+		x = (ins & 0x0F00) >> 8;
+		y = ins & 0x00FF;
+		chip->reg_v[x] += y;
 	} else if (nibble_h == 0x8) {
 		x = (ins & 0x0F00) >> 8;
 		y = (ins & 0x00F0) >> 4;
@@ -195,10 +201,18 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			chip->reg_v[x] = chip->dt;
 		} else if (y == 0x15) {
 			chip->dt = chip->reg_v[x];
+		} else if (y == 0x29) {
+			/* LD F, Vx */
+			/* TODO */
 		} else if (y == 0x33) {
 			/* LD B, Vx */
 			printf("TODO: LD B, Vx\n"); /* TODO */
 			/* TODO */
+		} else if (y == 0x65) {
+			/* LD Vx, [I] */
+			for (i = 0; i < x; i++) {
+				chip->reg_v[i] = chip->ram[chip->reg_i + i];
+			}
 		} else {
 			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
 		}
