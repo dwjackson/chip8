@@ -116,7 +116,8 @@ static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
 			}
 
 			if (SDL_RenderFillRect(renderer, &pixel) != 0) {
-				fprintf(stderr, "SDL_RenderFillRect failed: %s\n",
+				fprintf(stderr,
+					"SDL_RenderFillRect failed: %s\n",
 					SDL_GetError());
 			}
 		}

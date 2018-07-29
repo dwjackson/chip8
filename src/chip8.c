@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 	int disph, dispw;
 	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
 	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
+	int ret;
 
 	if (argc < 2) {
 		printf(USAGE_FMT, argv[0]);
@@ -40,7 +41,8 @@ int main(int argc, char *argv[])
 		perror("SDL_Init");
 		exit(EXIT_FAILURE);
 	}
-	if (SDL_CreateWindowAndRenderer(dispw, disph, 0, &window, &renderer) != 0) {
+	ret = SDL_CreateWindowAndRenderer(dispw, disph, 0, &window, &renderer);
+	if (ret != 0) {
 		SDL_Quit();
 		perror("SDL_CreateWindowAndRenderer");
 		exit(EXIT_FAILURE);
@@ -153,7 +155,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			/* EXIT */
 			return 1;
 		} else {
-			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
+			fprintf(stderr, "Unrecognized instruction: 0x%04X\n",
+				ins);
 		}
 	} else if (nibble_h == 0x1) {
 		chip8_jump(chip, ins);
@@ -196,7 +199,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 				chip->reg_v[i] = chip->ram[chip->reg_i + i];
 			}
 		} else {
-			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
+			fprintf(stderr, "Unrecognized instruction: 0x%04X\n",
+				ins);
 		}
 	} else {
 		fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
