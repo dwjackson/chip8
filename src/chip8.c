@@ -145,7 +145,6 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	byte y;
 	byte n;
 	unsigned short val;
-	byte regval;
 	int i;
 
 	nibble_h = (ins & 0xF000) >> 12;
@@ -166,13 +165,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	} else if (nibble_h == 0x2) {
 		chip8_call(chip, ins);
 	} else if (nibble_h == 0x3) {
-		/* SE Vx, byte */
-		x = (ins & 0x0F00) >> 8;
-		y = ins & 0x00FF;
-		regval = chip->reg_v[x];
-		if (regval == y) {
-			chip->pc += 2;
-		}
+		chip8_sne(chip, ins);
 	} else if (nibble_h == 0x6) {
 		/* LD Vx, byte */
 		x = (ins & 0x0F00) >> 8;

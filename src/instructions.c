@@ -49,3 +49,18 @@ void chip8_jump(struct chip8 *chip, unsigned short ins)
 	}
 	chip->pc = addr;
 }
+
+/* 3xkk - skip next instruction if Vx = kk */
+void chip8_sne(struct chip8 *chip, unsigned int ins)
+{
+	byte x, y;
+	byte regval;
+
+	/* SE Vx, byte */
+	x = (ins & 0x0F00) >> 8;
+	y = ins & 0x00FF;
+	regval = chip->reg_v[x];
+	if (regval == y) {
+		chip->pc += 2;
+	}
+}
