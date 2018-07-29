@@ -124,6 +124,7 @@ static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
 	SDL_RenderPresent(renderer);
 }
 
+/* DRW Vx, Vy, byte */
 void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
 	byte x, y;
@@ -163,4 +164,14 @@ void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		}
 	}
 	render_display(chip, renderer);
+}
+
+void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
+{
+	byte x, y;
+
+	/* ADD Vx, byte */
+	x = (ins & 0x0F00) >> 8;
+	y = ins & 0x00FF;
+	chip->reg_v[x] += y;
 }
