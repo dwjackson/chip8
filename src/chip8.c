@@ -11,14 +11,15 @@
 #define DISPLAY_WPIXELS 64
 #define DISPLAY_HPIXELS 32
 
-void chip8_init(struct chip8 *chip);
+void chip8_init(struct chip8 *chip, byte (*waitkey)());
 int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
-int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
+int chip8_decode(struct chip8 *chip, unsigned short ins);
 
 static void render_display(struct chip8 *chip, SDL_Renderer *renderer);
 static void render_black(SDL_Renderer *renderer);
 static void render_white(SDL_Renderer *renderer);
+byte waitkey();
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	chip8_init(&chip);
+	chip8_init(&chip, &waitkey);
 	file_name = argv[1];
 	chip8_load(&chip, file_name);
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void chip8_init(struct chip8 *chip)
+void chip8_init(struct chip8 *chip, byte (*waitkey)())
 {
 	int i, j;
 	unsigned short addr;
@@ -111,6 +112,7 @@ void chip8_init(struct chip8 *chip)
 			chip->ram[addr] = fontchars[i][j];
 		}
 	}
+	chip->waitkey = waitkey;
 	now = time(NULL);
 	srand(now);
 }
@@ -144,14 +146,14 @@ void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
 		ins = (*(unsigned short *)&((chip->ram[chip->pc])));
 		ins = TO_BIG_ENDIAN(ins);
 		chip->pc += 2;
-		if (decode(chip, ins, renderer) != 0) {
+		if (chip8_decode(chip, ins) != 0) {
 			break;
 		}
 		render_display(chip, renderer);
 	}
 }
 
-int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
+int chip8_decode(struct chip8 *chip, unsigned short ins)
 {
 	byte nibble_h;
 	byte y;
@@ -269,3 +271,70 @@ static void render_white(SDL_Renderer *renderer)
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 }
 
+byte waitkey()
+{
+	SDL_Event event;
+	byte keycode;
+
+	while (1) {
+		SDL_WaitEvent(&event);
+		if (event.type != SDL_KEYDOWN) {
+			continue;
+		}
+		switch (event.key.keysym.sym) {
+		case SDLK_7:
+			keycode = 0x1;
+			break;
+		case SDLK_8:
+			keycode = 0x2;
+			break;
+		case SDLK_9:
+			keycode = 0x3;
+			break;
+		case SDLK_0:
+			keycode = 0xC;
+			break;
+		case SDLK_u:
+			keycode = 0x4;
+			break;
+		case SDLK_i:
+			keycode = 0x5;
+			break;
+		case SDLK_o:
+			keycode = 0x6;
+			break;
+		case SDLK_p:
+			keycode = 0xD;
+			break;
+		case SDLK_j:
+			keycode = 0x7;
+			break;
+		case SDLK_k:
+			keycode = 0x8;
+			break;
+		case SDLK_l:
+			keycode = 0x9;
+			break;
+		case SDLK_SEMICOLON:
+			keycode = 0xE;
+			break;
+		case SDLK_n:
+			keycode = 0xA;
+			break;
+		case SDLK_m:
+			keycode = 0x0;
+			break;
+		case SDLK_COMMA:
+			keycode = 0xB;
+			break;
+		case SDLK_PERIOD:
+			keycode = 0xF;
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+
+	return keycode;
+}

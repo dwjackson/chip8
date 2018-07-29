@@ -207,71 +207,11 @@ void chip8_ld(struct chip8 *chip, unsigned short ins)
 void chip8_waitkey(struct chip8 *chip, unsigned short ins)
 {
 	byte x;
-	SDL_Event event;
 	byte keycode;
 
 	/* LD Vx, K */
 	x = (ins & 0x0F00) >> 8;
-	while (1) {
-		SDL_WaitEvent(&event);
-		if (event.type != SDL_KEYDOWN) {
-			continue;
-		}
-		switch (event.key.keysym.sym) {
-		case SDLK_7:
-			keycode = 0x1;
-			break;
-		case SDLK_8:
-			keycode = 0x2;
-			break;
-		case SDLK_9:
-			keycode = 0x3;
-			break;
-		case SDLK_0:
-			keycode = 0xC;
-			break;
-		case SDLK_u:
-			keycode = 0x4;
-			break;
-		case SDLK_i:
-			keycode = 0x5;
-			break;
-		case SDLK_o:
-			keycode = 0x6;
-			break;
-		case SDLK_p:
-			keycode = 0xD;
-			break;
-		case SDLK_j:
-			keycode = 0x7;
-			break;
-		case SDLK_k:
-			keycode = 0x8;
-			break;
-		case SDLK_l:
-			keycode = 0x9;
-			break;
-		case SDLK_SEMICOLON:
-			keycode = 0xE;
-			break;
-		case SDLK_n:
-			keycode = 0xA;
-			break;
-		case SDLK_m:
-			keycode = 0x0;
-			break;
-		case SDLK_COMMA:
-			keycode = 0xB;
-			break;
-		case SDLK_PERIOD:
-			keycode = 0xF;
-			break;
-		default:
-			break;
-		}
-		break;
-	}
-
+	keycode = chip->waitkey();
 	chip->reg_v[x] = keycode;
 }
 

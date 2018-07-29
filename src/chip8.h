@@ -26,6 +26,7 @@ struct chip8 {
 	unsigned short sp;
 	unsigned short stack[CHIP8_STACKSIZE];
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];
+	byte (*waitkey)();
 };
 
 #endif /* CHIP8_H */
