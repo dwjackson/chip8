@@ -166,12 +166,9 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 	} else if (nibble_h == 0x7) {
 		chip8_add_immediate(chip, ins);
 	} else if (nibble_h == 0x8) {
-		x = (ins & 0x0F00) >> 8;
-		y = (ins & 0x00F0) >> 4;
 		n = ins & 0x000F;
 		if (n == 0x4) {
-			/* ADD Vx, Vy */
-			chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
+			chip8_add(chip, ins);
 		} else {
 			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
 			abort();

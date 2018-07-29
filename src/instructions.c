@@ -175,3 +175,14 @@ void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
 	y = ins & 0x00FF;
 	chip->reg_v[x] += y;
 }
+
+void chip8_add(struct chip8 *chip, unsigned short ins)
+{
+	byte x, y;
+
+	x = (ins & 0x0F00) >> 8;
+	y = (ins & 0x00F0) >> 4;
+
+	/* ADD Vx, Vy */
+	chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
+}
