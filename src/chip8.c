@@ -1,0 +1,328 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "chip8.h"
+#include "SDL.h"
+
+#define USAGE_FMT "Usage: %s [FILE_NAME]\n"
+#define LOAD_BUFSIZE 512
+#define BIT(b, i) (((b) & (0x1 << (i))) >> (i))
+#define CHIP8_PIXEL_HEIGHT 10
+#define CHIP8_PIXEL_WIDTH 10
+#define DISPLAY_WPIXELS 64
+#define DISPLAY_HPIXELS 32
+
+void chip8_init(struct chip8 *chip);
+int chip8_load(struct chip8 *chip, char *file_name);
+void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer);
+int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
+void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer);
+int chip8_pushpc(struct chip8 *chip);
+int chip8_poppc(struct chip8 *chip);
+
+int main(int argc, char *argv[])
+{
+	struct chip8 chip;
+	char *file_name;
+	SDL_Window *window = NULL;
+	SDL_Renderer *renderer = NULL;
+	SDL_bool done = SDL_FALSE;
+	SDL_Event event;
+	int disph, dispw;
+	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
+	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
+
+	if (argc < 2) {
+		printf(USAGE_FMT, argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	chip8_init(&chip);
+	file_name = argv[1];
+	chip8_load(&chip, file_name);
+
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		perror("SDL_Init");
+		exit(EXIT_FAILURE);
+	}
+	if (SDL_CreateWindowAndRenderer(dispw, disph, 0, &window, &renderer) != 0) {
+		SDL_Quit();
+		perror("SDL_CreateWindowAndRenderer");
+		exit(EXIT_FAILURE);
+	}
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
+
+	chip8_exec(&chip, renderer);
+	while (!done) {
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) {
+				done = SDL_TRUE;
+			}
+		}
+	}
+
+	SDL_Quit();
+
+	return 0;
+}
+
+void chip8_init(struct chip8 *chip)
+{
+	int i, j;
+
+	memset(chip->reg_v, 0, CHIP8_REGCOUNT);
+	chip->reg_i = 0;
+	memset(chip->ram, 0, CHIP8_RAMBYTES);
+	chip->pc = 0;
+	chip->sp = 0;
+	memset(chip->stack, 0, CHIP8_STACKSIZE * sizeof(unsigned short));
+	for (i = 0 ; i < CHIP8_DISPLAYH; i++) {
+		for (j = 0; j < CHIP8_DISPLAYW; j++) {
+			chip->display[i][j] = 0x0;
+		}
+	}
+}
+
+int chip8_load(struct chip8 *chip, char *file_name)
+{
+	byte buf[LOAD_BUFSIZE];
+	FILE *fp = fopen(file_name, "rb");
+	size_t next = CHIP8_PROGSTART;
+	size_t count;
+	if (!fp) {
+		return -1;
+	}
+	while ((count = fread(&buf, 1, LOAD_BUFSIZE, fp)) > 0) {
+		if (next + count > CHIP8_RAMBYTES) {
+			fprintf(stderr, "Program is too long\n");
+			exit(EXIT_FAILURE);
+		}
+		memmove(chip->ram + next, buf, count);
+	}	
+	fclose(fp);
+	return 0;
+}
+
+void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
+{
+	unsigned short ins;
+
+	chip->pc = CHIP8_PROGSTART;
+	while (chip->pc < CHIP8_RAMBYTES) {
+		ins = (*(unsigned short *)&((chip->ram[chip->pc])));
+		ins = TO_BIG_ENDIAN(ins);
+		chip->pc += 2;
+		if (decode(chip, ins, renderer) != 0) {
+			break;
+		}
+	}
+}
+
+int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
+{
+	byte nibble_h;
+	unsigned short addr;
+	byte x;
+	byte y;
+	byte n;
+	unsigned short val;
+	byte regval;
+
+	nibble_h = (ins & 0xF000) >> 12;
+	if (nibble_h == 0x0) {
+		y = ins & 0x00FF;
+		if (y == 0x00) {
+			/* NOP */
+		} else if (y == 0xEE) {
+			/* RET */
+			chip8_poppc(chip);
+		} else if (y == 0xFD) {
+			/* EXIT */
+			return 1;
+		} else {
+			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
+		}
+	} else if (nibble_h == 0x1) {
+		/* JP addr */
+		addr = ins & 0x0FFF;
+		if (addr > CHIP8_RAMBYTES) {
+			fprintf(stderr, "Invalid jump\n");
+			exit(EXIT_FAILURE);
+		}
+		chip->pc = addr;
+	} else if (nibble_h == 0x2) {
+		/* CALL addr */
+		addr = ins & 0x0FFF;
+		chip8_pushpc(chip);
+		chip->pc = addr;
+	} else if (nibble_h == 0x3) {
+		/* SE Vx, byte */
+		x = (ins & 0x0F00) >> 8;
+		y = ins & 0x00FF;
+		regval = chip->reg_v[x];
+		if (regval == y) {
+			chip->pc += 2;
+		}
+	} else if (nibble_h == 0x6) {
+		/* LD Vx, byte */
+		x = (ins & 0x0F00) >> 8;
+		y = ins & 0x00FF;
+		chip->reg_v[x] = y;
+	} else if (nibble_h == 0x8) {
+		x = (ins & 0x0F00) >> 8;
+		y = (ins & 0x00F0) >> 4;
+		n = ins & 0x000F;
+		if (n == 0x4) {
+			/* ADD Vx, Vy */
+			chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
+		} else {
+			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
+			exit(EXIT_FAILURE);
+		}
+	} else if (nibble_h == 0xA) {
+		/* LD I, addr */
+		val = ins & 0x0FFF;
+		chip->reg_i = val;
+	} else if (nibble_h == 0xD) {
+		/* DRW Vx, Vy, byte */
+		chip8_draw(chip, ins, renderer);
+	} else if (nibble_h == 0xF) {
+		x = (ins & 0x0F00) >> 8;
+		y = ins & 0x00FF;
+		if (y == 0x07) {
+			chip->reg_v[x] = chip->dt;
+		} else if (y == 0x15) {
+			chip->dt = chip->reg_v[x];
+		} else if (y == 0x33) {
+			/* LD B, Vx */
+			printf("TODO: LD B, Vx\n"); /* TODO */
+			/* TODO */
+		} else {
+			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
+		}
+	} else {
+		fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
+		exit(EXIT_FAILURE);
+	}
+
+	return 0;
+}
+
+static void print_sprite(byte *sprite, int n)
+{
+	int i, j;
+	int bit;
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < 8; j++) {
+			bit = BIT(sprite[i], j);
+			if (bit == 1) {
+				printf("*");
+			} else {
+				printf(" ");
+			}
+		}
+		printf("\n");
+	}
+}
+
+static void render_black(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+}
+
+static void render_white(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+}
+
+static void render_display(struct chip8 *chip, SDL_Renderer *renderer)
+{
+	SDL_Rect pixel;
+	int i, j;
+	byte bit;
+
+	for (i = 0; i < CHIP8_DISPLAYH; i++) {
+		for (j = 0; j < CHIP8_DISPLAYW; j++) {
+			bit = chip->display[i][j];
+			pixel.x = j * CHIP8_PIXEL_WIDTH;
+			pixel.y = i * CHIP8_PIXEL_HEIGHT;
+			pixel.w = CHIP8_PIXEL_WIDTH;
+			pixel.h = CHIP8_PIXEL_HEIGHT;
+
+			if (bit == 0) {
+				render_black(renderer);
+			} else {
+				render_white(renderer);
+			}
+
+			if (SDL_RenderFillRect(renderer, &pixel) != 0) {
+				fprintf(stderr, "SDL_RenderFillRect failed: %s\n",
+					SDL_GetError());
+			}
+		}
+	}
+	SDL_RenderPresent(renderer);
+}
+
+void chip8_draw(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
+{
+	byte x, y;
+	byte n; /* Sprite length */
+	unsigned short addr;
+	byte vx, vy;
+	byte sprite[CHIP8_SPRITEBYTES];
+	int i, j;
+	int bit;
+
+	x = (ins & 0x0F00) >> 8;
+	y = (ins & 0x00F0) >> 4;
+	n = ins & 0x000F;
+	if (n > CHIP8_SPRITEBYTES) {
+		fprintf(stderr, "Invalid sprite length: 0x%04X\n", ins);
+		exit(EXIT_FAILURE);
+	}
+
+	addr = chip->reg_i;
+	if (addr < CHIP8_PROGSTART || addr >= CHIP8_RAMBYTES) {
+		fprintf(stderr, "Invalid draw address: 0x%04X\n", addr);
+		exit(EXIT_FAILURE);
+	}
+
+	vx = chip->reg_v[x];
+	vy = chip->reg_v[y];
+
+	for (i = 0; i < n; i++) {
+		sprite[i] = chip->ram[addr + i];
+	}
+	/* print_sprite(sprite, n); */ /* DEBUG */
+
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < 8; j++) {
+			bit = BIT(sprite[i], j);
+			chip->display[vy + i][vx + j] = bit;
+		}
+	}
+	render_display(chip, renderer);
+}
+
+int chip8_pushpc(struct chip8 *chip)
+{
+	if (chip->sp + 1 > CHIP8_STACKSIZE) {
+		return 1;
+	}
+	chip->sp++;
+	chip->stack[chip->sp] = chip->pc;
+	return 0;
+}
+
+int chip8_poppc(struct chip8 *chip)
+{
+	if (chip->sp - 1 < 0) {
+		return 1;
+	}
+	chip->pc = chip->stack[chip->sp];
+	chip->sp--;
+	return 0;
+}

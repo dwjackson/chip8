@@ -1,0 +1,21 @@
+6001 # Load 1 into V0 (x)
+610A # Load 10 into V1 (y)
+A222 # Load the address of "H" into I
+D015 # Draw a 5-pixel-high sprite at x=V0, y=V1
+620A # Load 10 into V2
+8024 # Add: V0 = V0 + V2 (add 10 to V0 - i.e. the x coord)
+A227 # Load the address of "E" into I
+D015 # Draw "E"
+8024 # Add: V0 = V0 + V2 (add 10 to V0 - i.e. the x coord)
+A22C # Load the address of "L" into I
+D015 # Draw "L"
+8024 # Add: V0 = V0 + V2 (add 10 to V0 - i.e. the x coord)
+D015 # Draw "L"
+8024 # Add: V0 = V0 + V2 (add 10 to V0 - i.e. the x coord)
+A231 # Load the address of "O" into I
+D015 # Draw "O"
+00FD # EXIT
+88 88 F8 88 88 # H
+F8 08 F8 08 F8 # E
+08 08 08 08 F8 # L
+F8 88 88 88 F8 # O
