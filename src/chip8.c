@@ -120,6 +120,19 @@ void chip8_exec(struct chip8 *chip, SDL_Renderer *renderer)
 	}
 }
 
+static void store_bcd(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte val = chip->reg_v[x];
+	byte i = chip->reg_i;
+	byte hundreds = val / 100;
+	byte tens = (val - hundreds * 100) / 10;
+	byte ones = val - hundreds * 100 - tens * 10;
+	chip->ram[i] = hundreds;
+	chip->ram[i + 1] = tens;
+	chip->ram[i + 2] = ones;
+}
+
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
 	byte nibble_h;
@@ -206,8 +219,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			/* TODO */
 		} else if (y == 0x33) {
 			/* LD B, Vx */
-			printf("TODO: LD B, Vx\n"); /* TODO */
-			/* TODO */
+			store_bcd(chip, ins);
 		} else if (y == 0x65) {
 			/* LD Vx, [I] */
 			for (i = 0; i < x; i++) {
