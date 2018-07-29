@@ -97,7 +97,7 @@ int chip8_load(struct chip8 *chip, char *file_name)
 	while ((count = fread(&buf, 1, LOAD_BUFSIZE, fp)) > 0) {
 		if (next + count > CHIP8_RAMBYTES) {
 			fprintf(stderr, "Program is too long\n");
-			exit(EXIT_FAILURE);
+			abort();
 		}
 		memmove(chip->ram + next, buf, count);
 	}	
@@ -128,6 +128,12 @@ static void store_bcd(struct chip8 *chip, unsigned short ins)
 	byte hundreds = val / 100;
 	byte tens = (val - hundreds * 100) / 10;
 	byte ones = val - hundreds * 100 - tens * 10;
+
+	if (i + 2 >= CHIP8_RAMBYTES) {
+		fprintf(stderr, "RAM overflow\n");
+		abort();
+	}
+
 	chip->ram[i] = hundreds;
 	chip->ram[i + 1] = tens;
 	chip->ram[i + 2] = ones;
@@ -163,7 +169,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		addr = ins & 0x0FFF;
 		if (addr > CHIP8_RAMBYTES) {
 			fprintf(stderr, "Invalid jump\n");
-			exit(EXIT_FAILURE);
+			abort();
 		}
 		chip->pc = addr;
 	} else if (nibble_h == 0x2) {
@@ -198,7 +204,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
 		} else {
 			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
-			exit(EXIT_FAILURE);
+			abort();
 		}
 	} else if (nibble_h == 0xA) {
 		/* LD I, addr */
@@ -230,7 +236,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		}
 	} else {
 		fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
-		exit(EXIT_FAILURE);
+		abort();
 	}
 
 	return 0;
