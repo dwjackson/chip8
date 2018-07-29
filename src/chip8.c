@@ -189,6 +189,8 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 		y = ins & 0x00FF;
 		if (y == 0x07) {
 			chip->reg_v[x] = chip->dt;
+		} else if (y == 0x0A) {
+			chip8_waitkey(chip, ins);
 		} else if (y == 0x15) {
 			chip->dt = chip->reg_v[x];
 		} else if (y == 0x29) {
