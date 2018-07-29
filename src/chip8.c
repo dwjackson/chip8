@@ -141,7 +141,6 @@ static void store_bcd(struct chip8 *chip, unsigned short ins)
 int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 {
 	byte nibble_h;
-	unsigned short addr;
 	byte x;
 	byte y;
 	byte n;
@@ -163,13 +162,7 @@ int decode(struct chip8 *chip, unsigned short ins, SDL_Renderer *renderer)
 			fprintf(stderr, "Unrecognized instruction: 0x%04X\n", ins);
 		}
 	} else if (nibble_h == 0x1) {
-		/* JP addr */
-		addr = ins & 0x0FFF;
-		if (addr > CHIP8_RAMBYTES) {
-			fprintf(stderr, "Invalid jump\n");
-			abort();
-		}
-		chip->pc = addr;
+		chip8_jump(chip, ins);
 	} else if (nibble_h == 0x2) {
 		chip8_call(chip, ins);
 	} else if (nibble_h == 0x3) {

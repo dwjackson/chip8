@@ -1,4 +1,6 @@
 #include "instructions.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static int chip8_pushpc(struct chip8 *chip)
 {
@@ -32,5 +34,18 @@ void chip8_call(struct chip8 *chip, unsigned short ins)
 	/* CALL addr */
 	addr = ins & 0x0FFF;
 	chip8_pushpc(chip);
+	chip->pc = addr;
+}
+
+void chip8_jump(struct chip8 *chip, unsigned short ins)
+{
+	unsigned short addr;
+
+	/* JP addr */
+	addr = ins & 0x0FFF;
+	if (addr > CHIP8_RAMBYTES) {
+		fprintf(stderr, "Invalid jump\n");
+		abort();
+	}
 	chip->pc = addr;
 }
