@@ -294,3 +294,9 @@ void chip8_rnd(struct chip8 *chip, unsigned short ins)
 	chip->reg_v[x] = r & b;
 }
 
+void chip8_or(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	chip->reg_v[x] = chip->reg_v[x] | chip->reg_v[y];
+}

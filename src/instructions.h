@@ -26,5 +26,6 @@ void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins);
 void chip8_store_bcd(struct chip8 *chip, unsigned short ins);
 void chip8_load_i_hexfont(struct chip8 *chip, unsigned short ins);
 void chip8_rnd(struct chip8 *chip, unsigned short ins);
+void chip8_or(struct chip8 *chip, unsigned short ins);
 
 #endif /* INSTRUCTIONS_H */

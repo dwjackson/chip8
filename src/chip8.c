@@ -129,6 +129,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 		n = ins & 0x000F;
 		if (n == 0x0) {
 			chip8_ld(chip, ins);
+		} else if (n == 0x1) {
+			chip8_or(chip, ins);
 		} else if (n == 0x4) {
 			chip8_add(chip, ins);
 		} else if (n == 0x5) {
