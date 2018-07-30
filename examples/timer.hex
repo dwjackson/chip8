@@ -1,0 +1,13 @@
+1207 # Jump to start
+88 50 20 50 88 # "X" sprite
+600A # Load 10 into V0
+A202 # Load "X" sprite address into I
+61B4 # Load 180 into V1 (180 at 60Hz = 3sec)
+F115 # Load V1 (120) into DT
+
+# LOOP
+F107 # Load DT into V1
+3100 # Skip next if DT/V1 == 0
+JP0F # Jump back to start of loop
+
+D005 # Draw the X

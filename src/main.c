@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "chip8.h"
 #include "SDL.h"
+#include <pthread.h>
+#include <unistd.h>
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define DISPLAY_WPIXELS 64
@@ -13,6 +15,7 @@ static void render_display(struct chip8 *chip);
 static void render_black(SDL_Renderer *renderer);
 static void render_white(SDL_Renderer *renderer);
 byte waitkey();
+static void *timer_thread_update(void *arg);
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +28,7 @@ int main(int argc, char *argv[])
 	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
 	int ret;
 	struct chip8_renderer c8renderer;
+	pthread_t timer_thread;
 
 	if (argc < 2) {
 		printf(USAGE_FMT, argv[0]);
@@ -51,7 +55,11 @@ int main(int argc, char *argv[])
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
+	pthread_create(&timer_thread, NULL, timer_thread_update, &chip);
+	
 	chip8_exec(&chip);
+
+	pthread_join(timer_thread, NULL);
 
 	SDL_Quit();
 
@@ -165,4 +173,16 @@ byte waitkey()
 	}
 
 	return keycode;
+}
+
+static void *timer_thread_update(void *arg)
+{
+	struct chip8 *chip = arg;
+	while (!chip->is_halted) {
+		usleep(1000000 / 60); /* 60 Hz */
+		if (chip->dt > 0) {
+			chip->dt--;
+		}
+	}
+	return NULL;
 }

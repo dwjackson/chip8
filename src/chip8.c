@@ -51,6 +51,7 @@ void chip8_init(struct chip8 *chip, byte (*waitkey)(),
 	}
 	chip->waitkey = waitkey;
 	chip->renderer = renderer;
+	chip->is_halted = 0;
 	now = time(NULL);
 	srand(now);
 }
