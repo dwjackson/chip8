@@ -118,9 +118,11 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 	} else if (nibble_h == 0x2) {
 		chip8_call(chip, ins);
 	} else if (nibble_h == 0x3) {
-		chip8_se(chip, ins);
+		chip8_se_immediate(chip, ins);
 	} else if (nibble_h == 0x4) {
 		chip8_sne(chip, ins);
+	} else if (nibble_h == 0x5) {
+		chip8_se(chip, ins);
 	} else if (nibble_h == 0x6) {
 		chip8_load_immediate(chip, ins);
 	} else if (nibble_h == 0x7) {

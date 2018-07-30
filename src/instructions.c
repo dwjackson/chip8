@@ -51,8 +51,13 @@ void chip8_jump(struct chip8 *chip, unsigned short ins)
 	chip->pc = addr;
 }
 
+static void skip_next(struct chip8 *chip)
+{
+	chip->pc += 2;
+}
+
 /* 3xkk - skip next instruction if Vx = kk */
-void chip8_se(struct chip8 *chip, unsigned short ins)
+void chip8_se_immediate(struct chip8 *chip, unsigned short ins)
 {
 	byte x, y;
 	byte regval;
@@ -62,7 +67,7 @@ void chip8_se(struct chip8 *chip, unsigned short ins)
 	y = ins & 0x00FF;
 	regval = chip->reg_v[x];
 	if (regval == y) {
-		chip->pc += 2;
+		skip_next(chip);
 	}
 }
 
@@ -73,7 +78,16 @@ void chip8_sne(struct chip8 *chip, unsigned short ins)
 	byte kk = (ins & 0x00FF);
 	byte v = chip->reg_v[x];
 	if (v != kk) {
-		chip->pc += 2;
+		skip_next(chip);
+	}
+}
+
+void chip8_se(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	if (chip->reg_v[x] == chip->reg_v[y]) {
+		skip_next(chip);
 	}
 }
 
