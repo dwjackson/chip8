@@ -138,7 +138,7 @@ static void print_sprite(byte *sprite, int n)
 
 static int is_within_display(int x, int y)
 {
-	return x >= 0 && y >= 0 && x <= CHIP8_DISPLAYW && y <= CHIP8_DISPLAYH;
+	return x >= 0 && y >= 0 && x < CHIP8_DISPLAYW && y < CHIP8_DISPLAYH;
 }
 
 /* DRW Vx, Vy, byte */
@@ -295,6 +295,11 @@ void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins)
 
 	/* LD Vx, [I] */
 	for (i = 0; i <= x; i++) {
+		if (chip->reg_i + i > CHIP8_RAMBYTES
+			|| chip->reg_i + i < CHIP8_PROGSTART) {
+			fprintf(stderr, "Invalid memory access\n");
+			abort();
+		}
 		chip8_setv(chip, i, chip->ram[chip->reg_i + i]);
 	}
 }
