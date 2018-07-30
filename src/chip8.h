@@ -35,6 +35,7 @@ struct chip8 {
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];
 	byte (*waitkey)();
 	struct chip8_renderer *renderer;
+	int is_halted;
 };
 
 void chip8_init(struct chip8 *chip, byte (*waitkey)(),

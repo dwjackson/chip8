@@ -89,6 +89,7 @@ void chip8_exec(struct chip8 *chip)
 		}
 		chip->renderer->render_display(chip);
 	}
+	chip->is_halted = 1;
 }
 
 int chip8_decode(struct chip8 *chip, unsigned short ins)

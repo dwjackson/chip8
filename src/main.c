@@ -20,8 +20,6 @@ int main(int argc, char *argv[])
 	char *file_name;
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
-	SDL_bool done = SDL_FALSE;
-	SDL_Event event;
 	int disph, dispw;
 	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
 	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
@@ -54,13 +52,6 @@ int main(int argc, char *argv[])
 	SDL_RenderClear(renderer);
 
 	chip8_exec(&chip);
-	while (!done) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				done = SDL_TRUE;
-			}
-		}
-	}
 
 	SDL_Quit();
 
