@@ -40,14 +40,18 @@ struct chip8 {
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];
 	struct chip8_renderer *renderer;
 	int is_halted;
+	void (*check_kill)(struct chip8 *chip);
 };
 
 void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
-	struct chip8_renderer *renderer);
+	struct chip8_renderer *renderer,
+	void (*check_kill)(struct chip8 *chip));
 int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip);
 int chip8_decode(struct chip8 *chip, unsigned short ins);
 int chip8_setv(struct chip8 *chip, byte index, byte value);
 void chip8_setvf(struct chip8 *chip, byte val);
+void chip8_setpixel(struct chip8 *chip, byte x, byte y, byte val);
+void chip8_halt(struct chip8 *chip);
 
 #endif /* CHIP8_H */

@@ -17,6 +17,7 @@ static void render_white(SDL_Renderer *renderer);
 static byte waitkey();
 static int is_key_down(byte key);
 static void *timer_thread_update(void *arg);
+static void check_kill(struct chip8 *chip);
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
 	keyboard.is_key_down = is_key_down;
 	c8renderer.data = renderer;
 	c8renderer.render_display = render_display;
-	chip8_init(&chip, &keyboard, &c8renderer);
+	chip8_init(&chip, &keyboard, &c8renderer, check_kill);
 	file_name = argv[1];
 	chip8_load(&chip, file_name);
 
@@ -255,4 +256,13 @@ static int is_key_down(byte key)
 		return 1;
 	}
 	return state[code];
+}
+
+static void check_kill(struct chip8 *chip)
+{
+	SDL_Event event;
+	SDL_PollEvent(&event);
+	if (event.type == SDL_QUIT) {
+		chip8_halt(chip);
+	}
 }

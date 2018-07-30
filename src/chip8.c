@@ -8,7 +8,8 @@
 #define LOAD_BUFSIZE 512
 
 void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
-	struct chip8_renderer *renderer)
+	struct chip8_renderer *renderer,
+	void (*check_kill)(struct chip8 *chip))
 {
 	int i, j;
 	unsigned short addr;
@@ -53,6 +54,7 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	chip->keyboard = keyboard;
 	chip->renderer = renderer;
 	chip->is_halted = 0;
+	chip->check_kill = check_kill;
 	now = time(NULL);
 	srand(now);
 }
@@ -64,6 +66,7 @@ int chip8_load(struct chip8 *chip, char *file_name)
 	size_t next = CHIP8_PROGSTART;
 	size_t count;
 	if (!fp) {
+		perror(file_name);
 		return -1;
 	}
 	while ((count = fread(&buf, 1, LOAD_BUFSIZE, fp)) > 0) {
@@ -82,7 +85,7 @@ void chip8_exec(struct chip8 *chip)
 	unsigned short ins;
 
 	chip->pc = CHIP8_PROGSTART;
-	while (chip->pc + 2 < CHIP8_RAMBYTES) {
+	while (chip->pc + 2 < CHIP8_RAMBYTES && !chip->is_halted) {
 		ins = (*(unsigned short *)&((chip->ram[chip->pc])));
 		ins = TO_BIG_ENDIAN(ins);
 		chip->pc += 2;
@@ -90,8 +93,9 @@ void chip8_exec(struct chip8 *chip)
 			break;
 		}
 		chip->renderer->render_display(chip);
+		chip->check_kill(chip);
 	}
-	chip->is_halted = 1;
+	chip8_halt(chip);
 }
 
 int chip8_decode(struct chip8 *chip, unsigned short ins)
@@ -217,4 +221,14 @@ void chip8_setvf(struct chip8 *chip, byte val)
 		val = 0x1;
 	}
 	chip->reg_v[0xF] = val;
+}
+
+void chip8_setpixel(struct chip8 *chip, byte x, byte y, byte val)
+{
+	chip->display[y][x] = val;
+}
+
+void chip8_halt(struct chip8 *chip)
+{
+	chip->is_halted = 1;
 }

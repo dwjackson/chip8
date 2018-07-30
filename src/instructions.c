@@ -151,6 +151,7 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 	byte sprite[CHIP8_SPRITEBYTES];
 	int i, j;
 	int bit;
+	int oldbit;
 	int currbit;
 	int disp_x, disp_y;
 
@@ -182,11 +183,11 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 			disp_y = vy + i;
 			if (is_within_display(disp_x, disp_y)) {
 				bit = BIT(sprite[i], j);
-				currbit = chip->display[disp_y][disp_x];
-				chip->display[disp_y][disp_x] = bit ^ currbit;
+				oldbit = chip->display[disp_y][disp_x];
+				currbit = bit ^ oldbit;
+				chip8_setpixel(chip, disp_x, disp_y, currbit);
 			}
-			if (currbit == 0x1
-				&& chip->display[disp_y][disp_x] == 0x0) {
+			if (oldbit == 0x1 && currbit == 0x0) {
 				chip8_setvf(chip, 0x1);
 			} else {
 				chip8_setvf(chip, 0x0);
@@ -240,7 +241,7 @@ void chip8_cls(struct chip8 *chip)
 	int i, j;
 	for (i = 0; i < CHIP8_DISPLAYH; i++) {
 		for (j = 0; j < CHIP8_DISPLAYW; j++) {
-			chip->display[i][j] = 0x0;
+			chip8_setpixel(chip, j, i, 0x0);
 		}
 	}
 }
