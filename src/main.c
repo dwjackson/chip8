@@ -14,7 +14,8 @@
 static void render_display(struct chip8 *chip);
 static void render_black(SDL_Renderer *renderer);
 static void render_white(SDL_Renderer *renderer);
-byte waitkey();
+static byte waitkey();
+static int is_key_down(byte key);
 static void *timer_thread_update(void *arg);
 
 int main(int argc, char *argv[])
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
 	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
 	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
 	int ret;
+	struct chip8_keyboard keyboard;
 	struct chip8_renderer c8renderer;
 	pthread_t timer_thread;
 
@@ -46,9 +48,11 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	keyboard.waitkey = waitkey;
+	keyboard.is_key_down = is_key_down;
 	c8renderer.data = renderer;
 	c8renderer.render_display = render_display;
-	chip8_init(&chip, &waitkey, &c8renderer);
+	chip8_init(&chip, &keyboard, &c8renderer);
 	file_name = argv[1];
 	chip8_load(&chip, file_name);
 
@@ -185,4 +189,64 @@ static void *timer_thread_update(void *arg)
 		}
 	}
 	return NULL;
+}
+
+static int is_key_down(byte key)
+{
+	const Uint8 *state = SDL_GetKeyboardState(NULL);
+	SDL_Scancode code;
+       
+	switch (key) {
+	case 0x0:
+		code = SDL_SCANCODE_M;
+		break;
+	case 0x1:
+		code = SDL_SCANCODE_7;
+		break;
+	case 0x2:
+		code = SDL_SCANCODE_8;
+		break;
+	case 0x3:
+		code = SDL_SCANCODE_9;
+		break;
+	case 0x4:
+		code = SDL_SCANCODE_U;
+		break;
+	case 0x5:
+		code = SDL_SCANCODE_I;
+		break;
+	case 0x6:
+		code = SDL_SCANCODE_O;
+		break;
+	case 0x7:
+		code = SDL_SCANCODE_J;
+		break;
+	case 0x8:
+		code = SDL_SCANCODE_K;
+		break;
+	case 0x9:
+		code = SDL_SCANCODE_L;
+		break;
+	case 0xA:
+		code = SDL_SCANCODE_N;
+		break;
+	case 0xB:
+		code = SDL_SCANCODE_COMMA;
+		break;
+	case 0xC:
+		code = SDL_SCANCODE_0;
+		break;
+	case 0xD:
+		code = SDL_SCANCODE_P;
+		break;
+	case 0xE:
+		code = SDL_SCANCODE_SEMICOLON;
+		break;
+	case 0xF:
+		code = SDL_SCANCODE_PERIOD;
+		break;
+	default:
+		return 1;
+	}
+	return state[code];
 }

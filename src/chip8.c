@@ -7,7 +7,7 @@
 
 #define LOAD_BUFSIZE 512
 
-void chip8_init(struct chip8 *chip, byte (*waitkey)(),
+void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	struct chip8_renderer *renderer)
 {
 	int i, j;
@@ -49,7 +49,7 @@ void chip8_init(struct chip8 *chip, byte (*waitkey)(),
 			chip->ram[addr] = fontchars[i][j];
 		}
 	}
-	chip->waitkey = waitkey;
+	chip->keyboard = keyboard;
 	chip->renderer = renderer;
 	chip->is_halted = 0;
 	now = time(NULL);
@@ -151,6 +151,16 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 		chip8_rnd(chip, ins);
 	} else if (nibble_h == 0xD) {
 		chip8_draw(chip, ins);
+	} else if (nibble_h == 0xE) {
+		n = (ins & 0x00FF);
+		if (n == 0x9E) {
+			chip8_skp(chip, ins);
+		} else if (n == 0xA1) {
+			chip8_sknp(chip, ins);
+		} else {
+			fprintf(stderr, "Bad instruction: 0x%04X\n", ins);
+			abort();
+		}
 	} else if (nibble_h == 0xF) {
 		y = ins & 0x00FF;
 		if (y == 0x07) {

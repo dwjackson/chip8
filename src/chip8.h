@@ -22,6 +22,11 @@ struct chip8_renderer {
 	void (*render_display)(struct chip8 *chip);
 };
 
+struct chip8_keyboard {
+	byte (*waitkey)();
+	int (*is_key_down)(byte keyval);
+};
+
 struct chip8 {
 	byte reg_v[CHIP8_REGCOUNT];
 	byte vf; 
@@ -32,13 +37,13 @@ struct chip8 {
 	unsigned int st;
 	unsigned short sp;
 	unsigned short stack[CHIP8_STACKSIZE];
+	struct chip8_keyboard *keyboard;
 	byte display[CHIP8_DISPLAYH][CHIP8_DISPLAYW];
-	byte (*waitkey)();
 	struct chip8_renderer *renderer;
 	int is_halted;
 };
 
-void chip8_init(struct chip8 *chip, byte (*waitkey)(),
+void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	struct chip8_renderer *renderer);
 int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip);

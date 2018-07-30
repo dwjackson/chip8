@@ -231,7 +231,7 @@ void chip8_waitkey(struct chip8 *chip, unsigned short ins)
 
 	/* LD Vx, K */
 	x = (ins & 0x0F00) >> 8;
-	keycode = chip->waitkey();
+	keycode = chip->keyboard->waitkey();
 	chip->reg_v[x] = keycode;
 }
 
@@ -320,4 +320,22 @@ void chip8_and(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
 	chip->reg_v[x] = chip->reg_v[x] & chip->reg_v[y];
+}
+
+void chip8_skp(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte keycode = chip->reg_v[x];
+	if (chip->keyboard->is_key_down(keycode)) {
+		skip_next(chip);
+	}
+}
+
+void chip8_sknp(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte keycode = chip->reg_v[x];
+	if (!chip->keyboard->is_key_down(keycode)) {
+		skip_next(chip);
+	}
 }
