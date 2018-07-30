@@ -77,6 +77,9 @@ static void render_display(struct chip8 *chip)
 	int i, j;
 	byte bit;
 
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
+
 	for (i = 0; i < CHIP8_DISPLAYH; i++) {
 		for (j = 0; j < CHIP8_DISPLAYW; j++) {
 			bit = chip->display[i][j];
