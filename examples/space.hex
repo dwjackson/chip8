@@ -1,0 +1,27 @@
+1207 # Jump to program start (past the sprites)
+20 70 D8 88 88 # Ship Sprite
+A202 # Store the location of the ship sprite in I
+600A # Ship x = 10
+6118 # Ship y = 24
+6301 # Store 1 in V3 for subtraction later
+
+# MAIN LOOP (15)
+D015 # Draw the ship
+F20A # Wait for keypress
+
+# Right
+4209 # Skip next if not L
+7001 # Add 1 to ship x
+403B # Skip nex if not equal to 64 - (ship size = 5)
+8035 # Subtract 1 from ship X (stay within bounds)
+
+# Left
+4208 # Skip next if not K
+8035 # Subtract 1 from ship X
+4000 # Skip next if ship X not equal to 0
+7001 # Add 1 to ship x
+
+00E0 # clear the screen
+4204 # Skip next if not U
+00FD # Exit
+120F # Jump to start of main loop

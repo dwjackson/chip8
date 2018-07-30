@@ -80,7 +80,7 @@ void chip8_exec(struct chip8 *chip)
 	unsigned short ins;
 
 	chip->pc = CHIP8_PROGSTART;
-	while (chip->pc < CHIP8_RAMBYTES) {
+	while (chip->pc + 2 < CHIP8_RAMBYTES) {
 		ins = (*(unsigned short *)&((chip->ram[chip->pc])));
 		ins = TO_BIG_ENDIAN(ins);
 		chip->pc += 2;
@@ -102,7 +102,7 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 		y = ins & 0x00FF;
 		if (y == 0x00) {
 			/* NOP */
-		} else if (y == 0x0E) {
+		} else if (y == 0xE0) {
 			chip8_cls(chip);
 		} else if (y == 0xEE) {
 			chip8_ret(chip);
@@ -131,6 +131,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 			chip8_ld(chip, ins);
 		} else if (n == 0x4) {
 			chip8_add(chip, ins);
+		} else if (n == 0x5) {
+			chip8_sub(chip, ins);
 		} else {
 			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
 			abort();

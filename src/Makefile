@@ -1,9 +1,10 @@
 CFLAGS = -g -O0 -Wall -Wextra -ansi
+CHIP8_SRC = main.c chip8.c instructions.c
 
 all: dis8 chip8 asm8 txt2hex
 
-chip8: main.c instructions.c
-	cc $(CFLAGS) -I/usr/include/SDL2 -o chip8 main.c instructions.c -lSDL2
+chip8: $(CHIP8_SRC)
+	cc $(CFLAGS) -I/usr/include/SDL2 -o chip8 $(CHIP8_SRC) -lSDL2
 
 dis8: dis8.c
 	cc $(CFLAGS) -o dis8 dis8.c

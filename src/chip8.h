@@ -37,4 +37,10 @@ struct chip8 {
 	struct chip8_renderer *renderer;
 };
 
+void chip8_init(struct chip8 *chip, byte (*waitkey)(),
+	struct chip8_renderer *renderer);
+int chip8_load(struct chip8 *chip, char *file_name);
+void chip8_exec(struct chip8 *chip);
+int chip8_decode(struct chip8 *chip, unsigned short ins);
+
 #endif /* CHIP8_H */

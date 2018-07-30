@@ -3,9 +3,6 @@
 
 #include "chip8.h"
 
-#define CHIP8_PIXEL_HEIGHT 10
-#define CHIP8_PIXEL_WIDTH 10
-
 #define BIT(b, i) (((b) & (0x1 << (i))) >> (i))
 
 void chip8_ret(struct chip8 *chip);
@@ -18,6 +15,7 @@ void chip8_load_immediate(struct chip8 *chip, unsigned short ins);
 void chip8_draw(struct chip8 *chip, unsigned short ins);
 void chip8_add_immediate(struct chip8 *chip, unsigned short ins);
 void chip8_add(struct chip8 *chip, unsigned short ins);
+void chip8_sub(struct chip8 *chip, unsigned short ins);
 void chip8_cls(struct chip8 *chip);
 void chip8_ld(struct chip8 *chip, unsigned short ins);
 void chip8_waitkey(struct chip8 *chip, unsigned short ins);

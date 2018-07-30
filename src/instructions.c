@@ -186,6 +186,13 @@ void chip8_add(struct chip8 *chip, unsigned short ins)
 	chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
 }
 
+void chip8_sub(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	chip->reg_v[x] -= chip->reg_v[y];
+}
+
 void chip8_cls(struct chip8 *chip)
 {
 	int i, j;
