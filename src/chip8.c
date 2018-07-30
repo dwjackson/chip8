@@ -123,7 +123,7 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 	} else if (nibble_h == 0x3) {
 		chip8_se_immediate(chip, ins);
 	} else if (nibble_h == 0x4) {
-		chip8_sne(chip, ins);
+		chip8_sne_immediate(chip, ins);
 	} else if (nibble_h == 0x5) {
 		chip8_se(chip, ins);
 	} else if (nibble_h == 0x6) {
@@ -152,6 +152,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
 			abort();
 		}
+	} else if (nibble_h == 0x9) {
+		chip8_sne(chip, ins);
 	} else if (nibble_h == 0xA) {
 		chip8_load_i(chip, ins);
 	} else if (nibble_h == 0xC) {

@@ -10,6 +10,7 @@ void chip8_call(struct chip8 *chip, unsigned short ins);
 void chip8_jump(struct chip8 *chip, unsigned short ins);
 void chip8_se_immediate(struct chip8 *chip, unsigned short ins);
 void chip8_se(struct chip8 *chip, unsigned short ins);
+void chip8_sne_immediate(struct chip8 *chip, unsigned short ins);
 void chip8_sne(struct chip8 *chip, unsigned short ins);
 void chip8_load_i(struct chip8 *chip, unsigned short ins);
 void chip8_load_immediate(struct chip8 *chip, unsigned short ins);

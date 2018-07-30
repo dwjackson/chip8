@@ -72,12 +72,22 @@ void chip8_se_immediate(struct chip8 *chip, unsigned short ins)
 }
 
 /* 4xkk - Skip next instruction if Vx == kk */
-void chip8_sne(struct chip8 *chip, unsigned short ins)
+void chip8_sne_immediate(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte kk = (ins & 0x00FF);
 	byte v = chip->reg_v[x];
 	if (v != kk) {
+		skip_next(chip);
+	}
+}
+
+/* 9xy0 - Skip next instruction if Vx == Vy */
+void chip8_sne(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	if (chip->reg_v[x] != chip->reg_v[y]) {
 		skip_next(chip);
 	}
 }
