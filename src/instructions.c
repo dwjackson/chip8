@@ -192,18 +192,30 @@ void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
 void chip8_add(struct chip8 *chip, unsigned short ins)
 {
 	byte x, y;
+	unsigned int result;
 
 	x = (ins & 0x0F00) >> 8;
 	y = (ins & 0x00F0) >> 4;
 
 	/* ADD Vx, Vy */
-	chip->reg_v[x] = chip->reg_v[x] + chip->reg_v[y];
+	result = chip->reg_v[x] + chip->reg_v[y];
+	if (result > 0xFF) {
+		chip->reg_vf = 0x1;
+	} else {
+		chip->reg_vf = 0x0;
+	}
+	chip->reg_v[x] = result & 0xFF;
 }
 
 void chip8_sub(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
+	if (chip->reg_v[x] < chip->reg_v[y]) {
+		chip->reg_vf = 0x1;
+	} else {
+		chip->reg_vf = 0x0;
+	}
 	chip->reg_v[x] -= chip->reg_v[y];
 }
 

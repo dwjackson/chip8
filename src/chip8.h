@@ -29,7 +29,7 @@ struct chip8_keyboard {
 
 struct chip8 {
 	byte reg_v[CHIP8_REGCOUNT];
-	byte vf; 
+	byte reg_vf; 
 	unsigned int reg_i;
 	byte ram[CHIP8_RAMBYTES];
 	unsigned short pc;

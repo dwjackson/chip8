@@ -33,7 +33,8 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	};	
 
 	memset(chip->reg_v, 0, CHIP8_REGCOUNT);
-	chip->reg_i = 0;
+	chip->reg_i = 0x00;
+	chip->reg_vf = 0x00;
 	memset(chip->ram, 0, CHIP8_RAMBYTES);
 	chip->pc = 0;
 	chip->sp = 0;
