@@ -401,3 +401,14 @@ void chip8_shl(struct chip8 *chip, unsigned short ins)
 	}
 	chip->reg_v[x] <<= 1;
 }
+
+void chip8_jump_add(struct chip8 *chip, unsigned short ins)
+{
+	unsigned short addr = ins & 0x0FFF;
+	unsigned short result_addr = addr + chip->reg_v[0];
+	if (result_addr > CHIP8_RAMBYTES || result_addr < CHIP8_PROGSTART) {
+		fprintf(stderr, "Invalid memory access\n");
+		abort();
+	}
+	chip->pc = result_addr;
+}

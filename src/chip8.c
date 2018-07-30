@@ -156,6 +156,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 		chip8_sne(chip, ins);
 	} else if (nibble_h == 0xA) {
 		chip8_load_i(chip, ins);
+	} else if (nibble_h == 0xB) {
+		chip8_jump_add(chip, ins);
 	} else if (nibble_h == 0xC) {
 		chip8_rnd(chip, ins);
 	} else if (nibble_h == 0xD) {

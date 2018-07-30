@@ -35,5 +35,6 @@ void chip8_sknp(struct chip8 *chip, unsigned short ins);
 void chip8_shr(struct chip8 *chip, unsigned short ins);
 void chip8_subn(struct chip8 *chip, unsigned short ins);
 void chip8_shl(struct chip8 *chip, unsigned short ins);
+void chip8_jump_add(struct chip8 *chip, unsigned short ins);
 
 #endif /* INSTRUCTIONS_H */
