@@ -175,6 +175,12 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 				currbit = chip->display[disp_y][disp_x];
 				chip->display[disp_y][disp_x] = bit ^ currbit;
 			}
+			if (currbit == 0x1
+				&& chip->display[disp_y][disp_x] == 0x0) {
+				chip->reg_vf = 0x1;
+			} else {
+				chip->reg_vf = 0x0;
+			}
 		}
 	}
 }
