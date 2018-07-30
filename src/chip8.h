@@ -34,7 +34,7 @@ struct chip8 {
 	byte ram[CHIP8_RAMBYTES];
 	unsigned short pc;
 	unsigned int dt;
-	unsigned int st;
+	unsigned int reg_st;
 	unsigned short sp;
 	unsigned short stack[CHIP8_STACKSIZE];
 	struct chip8_keyboard *keyboard;

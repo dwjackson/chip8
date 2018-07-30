@@ -281,7 +281,7 @@ void chip8_load_st(struct chip8 *chip, unsigned short ins)
 {
 	/* LD ST, Vx */
 	byte x = (ins & 0x0F00) >> 8;
-	chip->st = chip->reg_v[x];
+	chip->reg_st = chip->reg_v[x];
 }
 
 void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins)
@@ -289,8 +289,12 @@ void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	int i;
 
+	if (x > 0xF) {
+		x = 0xF;
+	}
+
 	/* LD Vx, [I] */
-	for (i = 0; i < x; i++) {
+	for (i = 0; i <= x; i++) {
 		chip->reg_v[i] = chip->ram[chip->reg_i + i];
 	}
 }
@@ -411,4 +415,23 @@ void chip8_jump_add(struct chip8 *chip, unsigned short ins)
 		abort();
 	}
 	chip->pc = result_addr;
+}
+
+void chip8_store_range_from_i(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	int i;
+
+	if (x > 0xF) {
+		x = 0xF;
+	}
+
+	for (i = 0; i <= x; i++) {
+		if (chip->reg_i + i > CHIP8_RAMBYTES
+			|| chip->reg_i + i < CHIP8_PROGSTART) {
+			fprintf(stderr, "Memory access error\n");
+			abort();
+		}
+		chip->ram[chip->reg_i + i] = chip->reg_v[i];
+	}
 }

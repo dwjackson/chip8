@@ -35,6 +35,7 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	memset(chip->reg_v, 0, CHIP8_REGCOUNT);
 	chip->reg_i = 0x00;
 	chip->reg_vf = 0x00;
+	chip->reg_st = 0x00;
 	memset(chip->ram, 0, CHIP8_RAMBYTES);
 	chip->pc = 0;
 	chip->sp = 0;
@@ -186,6 +187,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 			chip8_load_i_hexfont(chip, ins);
 		} else if (y == 0x33) {
 			chip8_store_bcd(chip, ins);
+		} else if (y == 0x55) {
+			chip8_store_range_from_i(chip, ins);
 		} else if (y == 0x65) {
 			chip8_load_range_from_i(chip, ins);
 		} else {
