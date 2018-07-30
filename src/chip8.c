@@ -133,6 +133,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 			chip8_ld(chip, ins);
 		} else if (n == 0x1) {
 			chip8_or(chip, ins);
+		} else if (n == 0x2) {
+			chip8_and(chip, ins);
 		} else if (n == 0x4) {
 			chip8_add(chip, ins);
 		} else if (n == 0x5) {
