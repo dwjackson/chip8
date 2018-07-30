@@ -351,3 +351,14 @@ void chip8_sknp(struct chip8 *chip, unsigned short ins)
 		skip_next(chip);
 	}
 }
+
+void chip8_shr(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	if ((chip->reg_v[x] & 0x1) == 0x1) {
+		chip->reg_vf = 0x1;
+	} else {
+		chip->reg_vf = 0x0;
+	}
+	chip->reg_v[x] >>= 1;
+}
