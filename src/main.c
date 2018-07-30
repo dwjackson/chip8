@@ -196,8 +196,11 @@ static void *timer_thread_update(void *arg)
 
 static int is_key_down(byte key)
 {
-	const Uint8 *state = SDL_GetKeyboardState(NULL);
+	const Uint8 *state;
 	SDL_Scancode code;
+
+	SDL_PumpEvents();
+	state = SDL_GetKeyboardState(NULL);
        
 	switch (key) {
 	case 0x0:
