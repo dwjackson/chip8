@@ -362,3 +362,15 @@ void chip8_shr(struct chip8 *chip, unsigned short ins)
 	}
 	chip->reg_v[x] >>= 1;
 }
+
+void chip8_subn(struct chip8 *chip, unsigned short ins)
+{
+	byte x = (ins & 0x0F00) >> 8;
+	byte y = (ins & 0x00F0) >> 4;
+	if (chip->reg_v[y] > chip->reg_v[x]) {
+		chip->reg_vf = 0x1;
+	} else {
+		chip->reg_vf = 0x0;
+	}
+	chip->reg_v[x] = chip->reg_v[y] - chip->reg_v[x];
+}

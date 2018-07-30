@@ -144,6 +144,8 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 			chip8_sub(chip, ins);
 		} else if (n == 0x6) {
 			chip8_shr(chip, ins);
+		} else if (n == 0x7) {
+			chip8_subn(chip, ins);
 		} else {
 			fprintf(stderr, "Not Implemented: 0x%04X\n", ins);
 			abort();
