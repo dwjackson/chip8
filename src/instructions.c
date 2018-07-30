@@ -116,7 +116,7 @@ void chip8_load_immediate(struct chip8 *chip, unsigned short ins)
 	/* LD Vx, byte */
 	x = (ins & 0x0F00) >> 8;
 	y = ins & 0x00FF;
-	chip->reg_v[x] = y;
+	chip8_setv(chip, x, y);
 }
 
 static void print_sprite(byte *sprite, int n)
@@ -187,9 +187,9 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 			}
 			if (currbit == 0x1
 				&& chip->display[disp_y][disp_x] == 0x0) {
-				chip->reg_vf = 0x1;
+				chip8_setvf(chip, 0x1);
 			} else {
-				chip->reg_vf = 0x0;
+				chip8_setvf(chip, 0x0);
 			}
 		}
 	}
@@ -202,7 +202,7 @@ void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
 	/* ADD Vx, byte */
 	x = (ins & 0x0F00) >> 8;
 	y = ins & 0x00FF;
-	chip->reg_v[x] += y;
+	chip8_setv(chip, x, chip->reg_v[x] + y);
 }
 
 void chip8_add(struct chip8 *chip, unsigned short ins)
@@ -216,11 +216,11 @@ void chip8_add(struct chip8 *chip, unsigned short ins)
 	/* ADD Vx, Vy */
 	result = chip->reg_v[x] + chip->reg_v[y];
 	if (result > 0xFF) {
-		chip->reg_vf = 0x1;
+		chip8_setvf(chip, 0x1);
 	} else {
-		chip->reg_vf = 0x0;
+		chip8_setvf(chip, 0x0);
 	}
-	chip->reg_v[x] = result & 0xFF;
+	chip8_setv(chip, x, result & 0xFF);
 }
 
 void chip8_sub(struct chip8 *chip, unsigned short ins)
@@ -228,11 +228,11 @@ void chip8_sub(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
 	if (chip->reg_v[x] < chip->reg_v[y]) {
-		chip->reg_vf = 0x1;
+		chip8_setvf(chip, 0x1);
 	} else {
-		chip->reg_vf = 0x0;
+		chip8_setvf(chip, 0x0);
 	}
-	chip->reg_v[x] -= chip->reg_v[y];
+	chip8_setv(chip, x, chip->reg_v[x] - chip->reg_v[y]);
 }
 
 void chip8_cls(struct chip8 *chip)
@@ -249,7 +249,7 @@ void chip8_ld(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
-	chip->reg_v[x] = chip->reg_v[y];
+	chip8_setv(chip, x, chip->reg_v[y]);
 }
 
 void chip8_waitkey(struct chip8 *chip, unsigned short ins)
@@ -260,14 +260,14 @@ void chip8_waitkey(struct chip8 *chip, unsigned short ins)
 	/* LD Vx, K */
 	x = (ins & 0x0F00) >> 8;
 	keycode = chip->keyboard->waitkey();
-	chip->reg_v[x] = keycode;
+	chip8_setv(chip, x, keycode);
 }
 
 void chip8_load_from_dt(struct chip8* chip, unsigned short ins)
 {
 	/* LD Vx, DT */
 	byte x = (ins & 0x0F00) >> 8;
-	chip->reg_v[x] = chip->dt;
+	chip8_setv(chip, x, chip->dt);
 }
 
 void chip8_load_dt(struct chip8 *chip, unsigned short ins)
@@ -289,13 +289,13 @@ void chip8_load_range_from_i(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	int i;
 
-	if (x > 0xF) {
-		x = 0xF;
+	if (x > 0xE) {
+		x = 0xE;
 	}
 
 	/* LD Vx, [I] */
 	for (i = 0; i <= x; i++) {
-		chip->reg_v[i] = chip->ram[chip->reg_i + i];
+		chip8_setv(chip, i, chip->ram[chip->reg_i + i]);
 	}
 }
 
@@ -337,21 +337,21 @@ void chip8_rnd(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	byte b = ins & 0x00FF;
 	byte r = rand();
-	chip->reg_v[x] = r & b;
+	chip8_setv(chip, x, r & b);
 }
 
 void chip8_or(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
-	chip->reg_v[x] = chip->reg_v[x] | chip->reg_v[y];
+	chip8_setv(chip, x, chip->reg_v[x] | chip->reg_v[y]);
 }
 
 void chip8_and(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
-	chip->reg_v[x] = chip->reg_v[x] & chip->reg_v[y];
+	chip8_setv(chip, x, chip->reg_v[x] & chip->reg_v[y]);
 }
 
 void chip8_skp(struct chip8 *chip, unsigned short ins)
@@ -376,11 +376,11 @@ void chip8_shr(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	if ((chip->reg_v[x] & 0x1) == 0x1) {
-		chip->reg_vf = 0x1;
+		chip8_setvf(chip, 0x1);
 	} else {
-		chip->reg_vf = 0x0;
+		chip8_setvf(chip, 0x0);
 	}
-	chip->reg_v[x] >>= 1;
+	chip8_setv(chip, x, chip->reg_v[x] >> 1);
 }
 
 void chip8_subn(struct chip8 *chip, unsigned short ins)
@@ -388,22 +388,22 @@ void chip8_subn(struct chip8 *chip, unsigned short ins)
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
 	if (chip->reg_v[y] > chip->reg_v[x]) {
-		chip->reg_vf = 0x1;
+		chip8_setvf(chip, 0x1);
 	} else {
-		chip->reg_vf = 0x0;
+		chip8_setvf(chip, 0x0);
 	}
-	chip->reg_v[x] = chip->reg_v[y] - chip->reg_v[x];
+	chip8_setv(chip, x, chip->reg_v[y] - chip->reg_v[x]);
 }
 
 void chip8_shl(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	if ((chip->reg_v[x] & 0x1) == 0x1) {
-		chip->reg_vf = 0x1;
+		chip8_setvf(chip, 0x1);
 	} else {
-		chip->reg_vf = 0x0;
+		chip8_setvf(chip, 0x0);
 	}
-	chip->reg_v[x] <<= 1;
+	chip8_setv(chip, x, chip->reg_v[x] << 1);
 }
 
 void chip8_jump_add(struct chip8 *chip, unsigned short ins)

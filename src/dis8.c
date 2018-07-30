@@ -74,7 +74,7 @@ void disassemble(FILE *fp)
 				printf("0x%04x\n", ins);
 			}
 		} else if (nibble_h == 0x6) {
-			printf("LD V%X, %hhd\n", NIBBLE_L(high), low);
+			printf("LD V%X, 0x%02X\n", NIBBLE_L(high), low);
 		} else if (nibble_h == 0xA) {
 			addr = ADDR(ins);
 			printf("LD I, 0x%04X\n", addr);

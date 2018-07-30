@@ -34,7 +34,6 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 
 	memset(chip->reg_v, 0, CHIP8_REGCOUNT);
 	chip->reg_i = 0x00;
-	chip->reg_vf = 0x00;
 	chip->reg_st = 0x00;
 	memset(chip->ram, 0, CHIP8_RAMBYTES);
 	chip->pc = 0;
@@ -201,4 +200,21 @@ int chip8_decode(struct chip8 *chip, unsigned short ins)
 	}
 
 	return 0;
+}
+
+int chip8_setv(struct chip8 *chip, byte index, byte value)
+{
+	if (index > 0xF) {
+		return -1;
+	}
+	chip->reg_v[index] = value;
+	return 0;
+}
+
+void chip8_setvf(struct chip8 *chip, byte val)
+{
+	if (val > 1) {
+		val = 0x1;
+	}
+	chip->reg_v[0xF] = val;
 }
