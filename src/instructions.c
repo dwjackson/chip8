@@ -75,9 +75,9 @@ void chip8_se_immediate(struct chip8 *chip, unsigned short ins)
 void chip8_sne_immediate(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
-	byte kk = (ins & 0x00FF);
-	byte v = chip->reg_v[x];
-	if (v != kk) {
+	byte kk = ins & 0x00FF;
+	byte regval = chip->reg_v[x];
+	if (regval != kk) {
 		skip_next(chip);
 	}
 }
@@ -229,7 +229,7 @@ void chip8_sub(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte y = (ins & 0x00F0) >> 4;
-	if (chip->reg_v[x] < chip->reg_v[y]) {
+	if (chip->reg_v[x] > chip->reg_v[y]) {
 		chip8_setvf(chip, 0x1);
 	} else {
 		chip8_setvf(chip, 0x0);
