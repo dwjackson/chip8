@@ -311,19 +311,19 @@ void chip8_store_bcd(struct chip8 *chip, unsigned short ins)
 {
 	byte x = (ins & 0x0F00) >> 8;
 	byte val = chip->reg_v[x];
-	byte i = chip->reg_i;
+	unsigned short addr = chip->reg_i;
 	byte hundreds = val / 100;
 	byte tens = (val - hundreds * 100) / 10;
 	byte ones = val - hundreds * 100 - tens * 10;
 
-	if (i + 2 >= CHIP8_RAMBYTES) {
+	if (addr + 2 >= CHIP8_RAMBYTES) {
 		fprintf(stderr, "RAM overflow\n");
 		abort();
 	}
 
-	chip->ram[i] = hundreds;
-	chip->ram[i + 1] = tens;
-	chip->ram[i + 2] = ones;
+	chip->ram[addr] = hundreds;
+	chip->ram[addr + 1] = tens;
+	chip->ram[addr + 2] = ones;
 }
 
 void chip8_load_i_hexfont(struct chip8 *chip, unsigned short ins)
