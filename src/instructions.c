@@ -154,6 +154,7 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 	int oldbit;
 	int currbit;
 	int disp_x, disp_y;
+	byte collision;
 
 	x = (ins & 0x0F00) >> 8;
 	y = (ins & 0x00F0) >> 4;
@@ -177,6 +178,9 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 	}
 	/* print_sprite(sprite, n); */ /* DEBUG */
 
+	oldbit = 0x0;
+	currbit = 0x0;
+	collision = 0x0;
 	for (i = 0; i < n; i++) {
 		for (j = 7; j >= 0; j--) {
 			disp_x = vx + (7 - j);
@@ -186,14 +190,11 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 				oldbit = chip->display[disp_y][disp_x];
 				currbit = bit ^ oldbit;
 				chip8_setpixel(chip, disp_x, disp_y, currbit);
-			}
-			if (oldbit == 0x1 && currbit == 0x0) {
-				chip8_setvf(chip, 0x1);
-			} else {
-				chip8_setvf(chip, 0x0);
+				collision = oldbit == 0x1 && currbit == 0x0;
 			}
 		}
 	}
+	chip8_setvf(chip, collision);
 }
 
 void chip8_add_immediate(struct chip8 *chip, unsigned short ins)
