@@ -1,0 +1,20 @@
+6001
+610A
+620A
+
+# Draw first number
+F029
+D115
+
+# Add and update number
+7001
+710A
+F029
+D125
+
+# Put 3 in C3, add to V0
+6303
+8034
+710A
+F029
+D125
