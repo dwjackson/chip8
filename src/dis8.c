@@ -136,6 +136,8 @@ void decode_f(instruction ins)
 		printf("LD F, V%X\n", x);
 	} else if (arg == 0x33) {
 		printf("LD B, V%X\n", x);
+	} else if (arg == 0x55) {
+		printf("LD [I], V%x\n", x);
 	} else if (arg == 0x65) {
 		printf("LD V%X, [I]\n", x);
 	} else {
