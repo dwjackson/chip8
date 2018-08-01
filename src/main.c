@@ -14,12 +14,17 @@
 #include "SDL.h"
 #include <pthread.h>
 #include <unistd.h>
+#include <math.h>
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define DISPLAY_WPIXELS 64
 #define DISPLAY_HPIXELS 32
 #define CHIP8_PIXEL_HEIGHT 10
 #define CHIP8_PIXEL_WIDTH 10
+
+#define FREQUENCY 44100
+#define VOLUME 127.0
+#define SAMPLES 8192
 
 static void render_display(struct chip8 *chip);
 static void render_black(SDL_Renderer *renderer);
@@ -193,13 +198,58 @@ byte waitkey()
 	return keycode;
 }
 
+struct audiodata {
+	float sin_pos;
+	float sin_step;
+};
+
+static void populate_audio(void *data, Uint8 *stream, int len)
+{
+	struct audiodata *audiodata = (struct audiodata *)data;
+	int i;
+	for (i = 0; i < len; i++) {
+		stream[i] = (Uint8) (VOLUME * sinf(audiodata->sin_pos)) + 127;
+		audiodata->sin_pos += audiodata->sin_step;
+	}
+}
+
 static void *timer_thread_update(void *arg)
 {
+	long freq = 770;
 	struct chip8 *chip = arg;
+	SDL_AudioSpec spec;
+	struct audiodata audiodata;
+
+	spec.freq = FREQUENCY;
+	spec.format = AUDIO_U8;
+	spec.channels = 1;
+	spec.samples = SAMPLES;
+	spec.callback = populate_audio;
+	spec.userdata = &audiodata;
+
+	audiodata.sin_pos = 0;
+	audiodata.sin_step = 2 * M_PI * freq / FREQUENCY;
+
+	if (SDL_OpenAudio(&spec, NULL) < 0) {
+		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
 	while (!chip->is_halted) {
 		usleep(1000000 / 60); /* 60 Hz */
-		if (chip->dt > 0) {
-			chip->dt--;
+		if (chip->reg_dt > 0) {
+			chip->reg_dt--;
+		}
+		if (chip->reg_st > 0) {
+			chip->reg_st--;
+		}
+		if (chip->reg_st > 0
+			&& (SDL_GetAudioStatus() == SDL_AUDIO_STOPPED
+				|| SDL_AUDIO_PAUSED)) {
+			SDL_PauseAudio(0);
+		} else if (chip->reg_st == 0
+			&& SDL_GetAudioStatus() == SDL_AUDIO_PLAYING) {
+			SDL_PauseAudio(1);
 		}
 	}
 	return NULL;

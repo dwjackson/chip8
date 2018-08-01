@@ -42,7 +42,7 @@ struct chip8 {
 	unsigned int reg_i;
 	byte ram[CHIP8_RAMBYTES];
 	unsigned short pc;
-	unsigned int dt;
+	unsigned int reg_dt;
 	unsigned int reg_st;
 	unsigned short sp;
 	unsigned short stack[CHIP8_STACKSIZE];
