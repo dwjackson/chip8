@@ -190,6 +190,7 @@ byte waitkey()
 			keycode = 0xF;
 			break;
 		default:
+			keycode = 0xFF;
 			break;
 		}
 		break;
@@ -219,6 +220,7 @@ static void *timer_thread_update(void *arg)
 	struct chip8 *chip = arg;
 	SDL_AudioSpec spec;
 	struct audiodata audiodata;
+	SDL_AudioStatus status;
 
 	spec.freq = FREQUENCY;
 	spec.format = AUDIO_U8;
@@ -243,12 +245,12 @@ static void *timer_thread_update(void *arg)
 		if (chip->reg_st > 0) {
 			chip->reg_st--;
 		}
+		status = SDL_GetAudioStatus();
 		if (chip->reg_st > 0
-			&& (SDL_GetAudioStatus() == SDL_AUDIO_STOPPED
-				|| SDL_AUDIO_PAUSED)) {
+			&& (status == SDL_AUDIO_STOPPED
+				|| status == SDL_AUDIO_PAUSED)) {
 			SDL_PauseAudio(0);
-		} else if (chip->reg_st == 0
-			&& SDL_GetAudioStatus() == SDL_AUDIO_PLAYING) {
+		} else if (chip->reg_st == 0 && status == SDL_AUDIO_PLAYING) {
 			SDL_PauseAudio(1);
 		}
 	}
