@@ -27,6 +27,33 @@ This system consists of several small programs:
 * `txt2hex` - convert a hexadecimal text file (hex digits) to a binary file
 * `dump8` - dump the hexadecimal content of a binary file
 
+## Building
+
+### Prerequisites
+
+This CHIP-8 interpreter depends on:
+
+* [SDL2](https://www.libsdl.org/index.php)
+* pthreads (and the POSIX system in general)
+
+### Compiling
+
+If you cloned the git repo (or even if you just don't see a `configure` file
+in the directory) you will need the GNU Autotools to build the software. To
+generate the `configure` file (and hence allow building):
+
+```sh
+autoreconf -iv
+```
+
+After that, use the normal build sequence of:
+
+```sh
+$ ./configure
+$ make
+# make install
+```
+
 ## License
 
 This project and all its associated files are licensed under the 
