@@ -4,10 +4,4 @@
 #
 # Copyright 2018 David Jackson
 
-all:
-	cd src && $(MAKE)
-
-clean:
-	cd src && $(MAKE) clean
-
-.PHONY: all clean
+SUBDIRS = src
