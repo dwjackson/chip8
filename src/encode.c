@@ -17,6 +17,7 @@ static unsigned short encode_se(struct statement *stmt);
 static unsigned short encode_sne(struct statement *stmt);
 static unsigned short encode_ld(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels);
+static unsigned short encode_drw(struct statement *stmt);
 
 unsigned short encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels)
@@ -48,6 +49,8 @@ unsigned short encode_statement(struct statement *stmt,
 		asm_stmt = encode_sne(stmt);
 	} else if (strcmp(ins, "LD") == 0) {
 		asm_stmt = encode_ld(stmt, labels, num_labels);
+	} else if (strcmp(ins, "DRW") == 0) {
+		asm_stmt = encode_drw(stmt);
 	} else {
 		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
@@ -183,7 +186,7 @@ static unsigned short encode_ld(struct statement *stmt,
 	unsigned short addr;
 
 	if (stmt->num_args < 2) {
-		fprintf(stderr, "Too few arguments for SE\n");
+		fprintf(stderr, "Too few arguments for LD\n");
 		abort();
 	}
 
@@ -229,7 +232,27 @@ static unsigned short encode_ld(struct statement *stmt,
 		print_statement(stmt);
 		abort();
 	}
-	/* TODO */
 
 	return NOP;
+}
+
+static unsigned short encode_drw(struct statement *stmt)
+{
+	unsigned short x;
+	unsigned short y;
+	unsigned short n;
+
+	if (stmt->num_args < 3) {
+		fprintf(stderr, "Too few arguments for DRW\n");
+		abort();
+	}
+
+	x = strtol(&(stmt->args[0][1]), NULL, 16);
+	y = strtol(&(stmt->args[1][1]), NULL, 16);
+	n = str_to_addr(stmt->args[2]);
+
+	return 0xD000
+		| ((x << 8) & 0x0F00)
+		| ((y << 4) & 0x00F0)
+		| (n & 0x000F);
 }
