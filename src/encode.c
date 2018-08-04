@@ -20,6 +20,11 @@ unsigned short encode_statement(struct statement *stmt,
 {
 	unsigned short asm_stmt;
 	char ins[INSTRUCTION_SIZE];
+
+	if (!stmt->has_instruction) {
+		return NO_INSTRUCTION;
+	}
+
 	strcpy(ins, stmt->instruction);
 	size_t i;
 	for (i = 0; i < strlen(ins); i++) {
@@ -37,7 +42,7 @@ unsigned short encode_statement(struct statement *stmt,
 	} else if (strcmp(ins, "SE") == 0) {
 		asm_stmt = encode_se(stmt);
 	} else {
-		fprintf(stderr, "Unregonized instruction: %s\n", ins);
+		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
 	}
 	/* TODO */

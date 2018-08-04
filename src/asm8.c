@@ -110,6 +110,9 @@ void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t
 	currstate = fsm->currstate;
 	if (currstate != nextstate) {
 		switch(currstate) {
+		case STATE_START:
+			/* Do nothing */
+			break;
 		case STATE_LABEL:
 			strcpy(stmt->label, buf);
 			stmt->has_label = 1;
@@ -131,6 +134,9 @@ void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t
 			}
 			strcpy(stmt->args[stmt->num_args], buf);
 			stmt->num_args++;
+			break;
+		case STATE_COMMENT:
+			/* Do nothing */
 			break;
 		case STATE_DONE:
 			/* Do nothing */
@@ -198,6 +204,9 @@ void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], 
 		parse_statement(line, &stmt);
 		/*print_statement(&stmt); */ /* DEBUG */
 		asm_stmt = encode_statement(&stmt, labels, num_labels);
+		if (asm_stmt == NO_INSTRUCTION) {
+			continue;
+		}
 		asm_stmt = TO_BIG_ENDIAN(asm_stmt);
 		fwrite(&asm_stmt, 2, 1, out_fp);
 	}

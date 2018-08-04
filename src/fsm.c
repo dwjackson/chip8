@@ -3,9 +3,11 @@
 #include <ctype.h>
 #include "fsm.h"
 
+#define COMMENT_CHAR ';'
+
 void fsm_init(struct fsm *fsm, const char *in, struct statement *stmt)
 {
-	fsm->currstate = STATE_LABEL;
+	fsm->currstate = STATE_START;
 	fsm->in = in;
 	fsm->stmt = stmt;
 }
@@ -22,13 +24,20 @@ enum state fsm_nextstate(struct fsm *fsm, char nextch)
 	if (nextch == '\n') {
 		return STATE_DONE;
 	}
+	if (nextch == COMMENT_CHAR) {
+		return STATE_COMMENT;
+	}
 	switch (fsm->currstate) {
+	case STATE_START:
+		if (!isspace(nextch)) {
+			return STATE_LABEL;
+		}
+		break;
 	case STATE_LABEL:
 		if (nextch == ':') {
 			return STATE_AFTER_LABEL;
 		}
 		if (isspace(nextch)) {
-			/* No colon implies this was an instruction */
 			fsm->currstate = STATE_INSTRUCTION;
 			return STATE_WHITESPACE;
 		}
@@ -59,6 +68,8 @@ enum state fsm_nextstate(struct fsm *fsm, char nextch)
 			return STATE_WHITESPACE;
 		}
 		break;
+	case STATE_COMMENT:
+		return STATE_COMMENT;
 	case STATE_DONE:
 		break;
 	default:
