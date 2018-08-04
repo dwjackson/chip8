@@ -61,7 +61,7 @@ void disassemble(FILE *fp)
 	while (!feof(fp)) {
 		if (fread(&ins, 1, 2, fp) < 2) {
 			ins = ins & 0x00FF;
-			printf("0x%04X: %02X\n", ins_addr, high);
+			printf("0x%04X: %02X\n", ins_addr, ins);
 			continue;
 		}	
 		ins = TO_BIG_ENDIAN(ins);
