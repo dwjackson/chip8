@@ -138,6 +138,8 @@ void decode_f(instruction ins)
 
 	if (arg == 0x07) {
 		printf("LD V%X, DT\n", x);
+	} else if (arg == 0x0A) {
+		printf("LD V%X, K\n", x);
 	} else if (arg == 0x15) {
 		printf("LD DT, V%X\n", x);
 	} else if (arg == 0x18) {
