@@ -18,6 +18,7 @@ static unsigned short encode_sne(struct statement *stmt);
 static unsigned short encode_ld(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels);
 static unsigned short encode_drw(struct statement *stmt);
+static unsigned short encode_add(struct statement *stmt);
 
 unsigned short encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels)
@@ -49,6 +50,8 @@ unsigned short encode_statement(struct statement *stmt,
 		asm_stmt = encode_sne(stmt);
 	} else if (strcmp(ins, "LD") == 0) {
 		asm_stmt = encode_ld(stmt, labels, num_labels);
+	} else if (strcmp(ins, "ADD") == 0) {
+		asm_stmt = encode_add(stmt);
 	} else if (strcmp(ins, "DRW") == 0) {
 		asm_stmt = encode_drw(stmt);
 	} else {
@@ -255,4 +258,45 @@ static unsigned short encode_drw(struct statement *stmt)
 		| ((x << 8) & 0x0F00)
 		| ((y << 4) & 0x00F0)
 		| (n & 0x000F);
+}
+
+static unsigned short encode_add(struct statement *stmt)
+{
+	const char *dst;
+	const char *src;
+	unsigned short high;
+	unsigned short dst_byte;
+	unsigned short src_byte;
+	unsigned short b;
+
+	if (stmt->num_args < 2) {
+		fprintf(stderr, "Too few arguments for ADD\n");
+		abort();
+	}
+
+	dst = stmt->args[0];
+	src = stmt->args[1];
+
+	if ((dst[0] == 'V' || dst[0] == 'v')
+		&& (src[0] == 'V' || src[0] == 'v')) {
+		high = 0x8004;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		src_byte = strtol(&src[1], NULL, 16);
+		return high
+			| ((dst_byte << 8) & 0x0F00)
+			| ((src_byte << 4) & 0x00F0);
+	} else if (dst[0] == 'I' && (src[0] == 'V' || src[0] == 'v')) {
+		high = 0xF01E;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00);
+	} else if (dst[0] == 'V' || dst[0] == 'v') {
+		b = str_to_addr(dst);
+		high = 0x7000;
+		return high | ((b << 8) & 0x0F00) | (b & 0x00FF);
+	} else {
+		fprintf(stderr, "Unimplemented ADD\n");
+		abort();
+	}
+
+	return NOP;
 }
