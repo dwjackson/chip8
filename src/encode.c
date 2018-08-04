@@ -14,6 +14,7 @@ static unsigned short encode_call(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels);
 static unsigned short str_to_addr(const char *arg);
 static unsigned short encode_se(struct statement *stmt);
+static unsigned short encode_sne(struct statement *stmt);
 
 unsigned short encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels)
@@ -41,6 +42,8 @@ unsigned short encode_statement(struct statement *stmt,
 		asm_stmt = encode_call(stmt, labels, num_labels);
 	} else if (strcmp(ins, "SE") == 0) {
 		asm_stmt = encode_se(stmt);
+	} else if (strcmp(ins, "SNE") == 0) {
+		asm_stmt = encode_sne(stmt);
 	} else {
 		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
@@ -115,6 +118,7 @@ static unsigned short encode_se(struct statement *stmt)
 	const char *cmp;
 	unsigned char v;
 	unsigned char c;
+	unsigned short high;
 	if (stmt->num_args < 2) {
 		fprintf(stderr, "Too few arguments for SE\n");
 		abort();
@@ -128,8 +132,38 @@ static unsigned short encode_se(struct statement *stmt)
 	v = strtol(&reg[1], NULL, 16);
 	if (cmp[0] == 'V' || cmp[0] == 'v') {
 		c = strtol(&cmp[1], NULL, 16);
+		high = 0x5000;
 	} else {
 		c = str_to_addr(cmp);
+		high = 0x3000;
 	}
-	return 0x3000 | ((v << 8) & 0x0F00) | (c & 0x00FF);
+	return high | ((v << 8) & 0x0F00) | (c & 0x00FF);
+}
+
+static unsigned short encode_sne(struct statement *stmt)
+{
+	const char *reg;
+	const char *cmp;
+	unsigned char v;
+	unsigned char c;
+	unsigned short high;
+	if (stmt->num_args < 2) {
+		fprintf(stderr, "Too few arguments for SE\n");
+		abort();
+	}
+	reg = stmt->args[0];
+	cmp = stmt->args[1];
+	if (!(reg[0] == 'V' || reg[0] == 'v')) {
+		fprintf(stderr, "First argument to SE must be register\n");
+		abort();
+	}
+	v = strtol(&reg[1], NULL, 16);
+	if (cmp[0] == 'V' || cmp[0] == 'v') {
+		c = strtol(&cmp[1], NULL, 16);
+		high = 0x9000;
+	} else {
+		c = str_to_addr(cmp);
+		high = 0x4000;
+	}
+	return high | ((v << 8) & 0x0F00) | (c & 0x00FF);
 }
