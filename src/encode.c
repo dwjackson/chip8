@@ -150,7 +150,7 @@ static unsigned short encode_se(struct statement *stmt)
 	}
 	v = strtol(&reg[1], NULL, 16);
 	if (cmp[0] == 'V' || cmp[0] == 'v') {
-		c = strtol(&cmp[1], NULL, 16);
+		c = str_to_addr(cmp);
 		high = 0x5000;
 	} else {
 		c = str_to_addr(cmp);
@@ -237,7 +237,7 @@ static unsigned short encode_ld(struct statement *stmt,
 	} else if (dst[0] == 'V' || dst[0] == 'v') {
 		high = 0x6000;
 		dst_byte = strtol(&dst[1], NULL, 16);
-		src_byte = strtol(&src[1], NULL, 16);
+		src_byte = str_to_addr(src);
 		return high | ((dst_byte << 8) & 0x0F00) | (src_byte & 0x00FF); 
 	} else {
 		fprintf(stderr, "Unimplemented LD\n");

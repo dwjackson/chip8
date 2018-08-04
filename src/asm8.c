@@ -5,10 +5,10 @@
 #include "asm8.h"
 #include "fsm.h"
 #include "encode.h"
+#include "chip8.h"
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define BUFSIZE LINE_SIZE
-#define TO_BIG_ENDIAN(s) ((((s) & 0x00FF) << 8) | (((s) & 0xFF00) >> 8))
 
 void assemble(FILE *in_fp, FILE *out_fp);
 void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_labels); 
@@ -65,7 +65,7 @@ void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_label
 	char line[LINE_SIZE];
 	struct statement stmt;
 	unsigned short stmt_len;
-	unsigned short addr = 0x0000;
+	unsigned short addr = CHIP8_PROGSTART;
 	while (fgets(line, LINE_SIZE, in_fp) != NULL) {
 		statement_reset(&stmt);
 		parse_statement(line, &stmt);
