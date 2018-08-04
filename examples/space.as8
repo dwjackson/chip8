@@ -1,0 +1,32 @@
+JP start ; Jump to program start (past the sprites)
+ship:
+	.sb 0x20
+	.sb 0x70
+	.sb 0xD8
+	.sb 0x88
+	.sb 0x88
+LD I, ship
+LD V0, 10 ; ship x
+LD V1, 24 ; ship y
+LD V3, 1  ; Store 1 in V3 for subtraction later
+
+loop:
+DRW V0, V1, 5
+LD Vx, K ; Wait for keypress
+
+; Right
+SNE V2, 0x09 ; Skip next if not "L"
+ADD V0, 1    ; Add 1 to ship x
+SNE V0, 0x3B ; Skip next if not equal to 64 - (ship size = 5)
+SUB V0, V3   ; Subtract 1 from ship x (stay within bounds)
+
+; Left
+SNE V2, 0x08 ; Skip next if not "K"
+SUB V0, V3   ; Subtract 1 from ship x
+SNE V0, 0    ; Skip next if ship x not equal to 0
+ADD V0, 1    ; Add 1 to ship x
+
+CLS          ; clear the screen
+SNE V2, 0x04 ; Skip next if not "U"
+EXIT
+JP loop      ; Jump to start of main loop
