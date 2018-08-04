@@ -33,6 +33,9 @@ static unsigned short encode_sub(struct statement *stmt);
 static unsigned short encode_sprite_byte(struct statement *stmt);
 static unsigned short encode_or(struct statement *stmt);
 static unsigned short encode_and(struct statement *stmt);
+static unsigned short encode_xor(struct statement *stmt);
+static unsigned short encode_bitwise(struct statement *stmt,
+	unsigned short ins, const char *ins_name);
 
 int encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels,
@@ -72,6 +75,8 @@ int encode_statement(struct statement *stmt,
 		asm_stmt = encode_or(stmt);
 	} else if (strcmp(ins, "AND") == 0) {
 		asm_stmt = encode_and(stmt);
+	} else if (strcmp(ins, "XOR") == 0) {
+		asm_stmt = encode_xor(stmt);
 	} else if (strcmp(ins, "SUB") == 0) {
 		asm_stmt = encode_sub(stmt);
 	} else if (strcmp(ins, "DRW") == 0) {
@@ -368,25 +373,21 @@ static unsigned short encode_sub(struct statement *stmt)
 
 static unsigned short encode_or(struct statement *stmt)
 {
-	const char *dst;
-	const char *src;
-	unsigned short dst_byte;
-	unsigned short src_byte;
-
-	if (stmt->num_args < 2) {
-		fprintf(stderr, "Too few arguments for OR\n");
-		abort();
-	}
-
-	dst = stmt->args[0];
-	src = stmt->args[1];
-	dst_byte = strtol(&dst[1], NULL, 16);
-	src_byte = strtol(&src[1], NULL, 16);
-
-	return 0x8001 | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
+	return encode_bitwise(stmt, 0x8001, "OR");
 }
 
 static unsigned short encode_and(struct statement *stmt)
+{
+	return encode_bitwise(stmt, 0x8002, "AND");
+}
+
+static unsigned short encode_xor(struct statement *stmt)
+{
+	return encode_bitwise(stmt, 0x8003, "XOR");
+}
+
+static unsigned short encode_bitwise(struct statement *stmt,
+	unsigned short ins, const char *ins_name)
 {
 	const char *dst;
 	const char *src;
@@ -394,7 +395,7 @@ static unsigned short encode_and(struct statement *stmt)
 	unsigned short src_byte;
 
 	if (stmt->num_args < 2) {
-		fprintf(stderr, "Too few arguments for OR\n");
+		fprintf(stderr, "Too few arguments for %s\n", ins_name);
 		abort();
 	}
 
@@ -403,5 +404,5 @@ static unsigned short encode_and(struct statement *stmt)
 	dst_byte = strtol(&dst[1], NULL, 16);
 	src_byte = strtol(&src[1], NULL, 16);
 
-	return 0x8002 | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
+	return ins | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
 }
