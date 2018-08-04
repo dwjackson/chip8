@@ -162,7 +162,16 @@ void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t
 
 unsigned short statement_length(struct statement *stmt)
 {
+	char ins[INSTRUCTION_SIZE];
+	size_t i;
 	if (stmt->has_instruction) {
+		strcpy(ins, stmt->instruction);
+		for (i = 0; i < strlen(ins); i++) {
+			ins[i] = toupper(ins[i]);
+		}
+		if (strcmp(ins, ".SB") == 0) {
+			return 1;
+		}
 		return 2;
 	}
 	return 0;
