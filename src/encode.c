@@ -31,6 +31,7 @@ static unsigned short encode_drw(struct statement *stmt);
 static unsigned short encode_add(struct statement *stmt);
 static unsigned short encode_sub(struct statement *stmt);
 static unsigned short encode_sprite_byte(struct statement *stmt);
+static unsigned short encode_or(struct statement *stmt);
 
 int encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels,
@@ -66,6 +67,8 @@ int encode_statement(struct statement *stmt,
 		asm_stmt = encode_ld(stmt, labels, num_labels);
 	} else if (strcmp(ins, "ADD") == 0) {
 		asm_stmt = encode_add(stmt);
+	} else if (strcmp(ins, "OR") == 0) {
+		asm_stmt = encode_or(stmt);
 	} else if (strcmp(ins, "SUB") == 0) {
 		asm_stmt = encode_sub(stmt);
 	} else if (strcmp(ins, "DRW") == 0) {
@@ -358,4 +361,24 @@ static unsigned short encode_sub(struct statement *stmt)
 	src_byte = strtol(&src[1], NULL, 16);
 
 	return 0x8005 | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
+}
+
+static unsigned short encode_or(struct statement *stmt)
+{
+	const char *dst;
+	const char *src;
+	unsigned short dst_byte;
+	unsigned short src_byte;
+
+	if (stmt->num_args < 2) {
+		fprintf(stderr, "Too few arguments for OR\n");
+		abort();
+	}
+
+	dst = stmt->args[0];
+	src = stmt->args[1];
+	dst_byte = strtol(&dst[1], NULL, 16);
+	src_byte = strtol(&src[1], NULL, 16);
+
+	return 0x8001 | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
 }
