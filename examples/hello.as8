@@ -1,0 +1,41 @@
+LD V0, 0x01   ; Load 1 in V0 (x)
+LD V1, 0x0A   ; Load 10 into V1 (y)
+LD I, char_h  ; Load the address of "H" into I
+DRW V0, V1, 5 ; Draw a 5-pixel-high spite at x=V0, y=V1
+LD V2, 0x0A   ; Load 10 into V2
+ADD V0, V2    ; V0 + V2 (add 10 to V0 - i.e. the x coord)
+LD I, char_e  ; Load the address of "E" into I
+DRW V0, V1, 5 ; Draw "E"
+ADD V0, V2    ; V0 + V2 (add 10 to V0 - i.e. the x coord)
+LD I, char_l  ; Load the address of "L" into I
+DRW V0, V1, 5 ; Draw "L"
+ADD V0, V2    ; V0 + V2 (add 10 to V0 - i.e. the x coord)
+DRW V0, V1, 5 ; Draw "L"
+ADD V0, V2    ; V0 + V2 (add 10 to V0 - i.e. the x coord)
+LD I, char_o  ; Load the address of "O" into I
+DRW V0, V1, 5 ; Draw "O"
+EXIT
+char_h:
+	.SB 0x88 
+	.SB 0x88
+	.SB 0xF8
+	.SB 0x88
+	.SB 0x88
+char_e:
+	.SB 0xF8
+	.SB 0x80
+	.SB 0xF8
+	.SB 0x80
+	.SB 0xF8
+char_l:
+	.SB 0x80
+	.SB 0x80
+	.SB 0x80
+	.SB 0x80
+	.SB 0xF8
+char_o:
+	.SB 0xF8
+	.SB 0x88
+	.SB 0x88
+	.SB 0x88
+	.SB 0xF8
