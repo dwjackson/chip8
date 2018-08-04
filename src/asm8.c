@@ -199,16 +199,24 @@ void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], 
 	char line[LINE_SIZE];
 	struct statement stmt;
 	unsigned short asm_stmt;
+	int bytes;
+	unsigned char b;
+
 	while (fgets(line, LINE_SIZE, in_fp) != NULL) {
 		statement_reset(&stmt);
 		parse_statement(line, &stmt);
 		/*print_statement(&stmt); */ /* DEBUG */
-		asm_stmt = encode_statement(&stmt, labels, num_labels);
-		if (asm_stmt == NO_INSTRUCTION) {
+		bytes = encode_statement(&stmt, labels, num_labels, &asm_stmt);
+		if (bytes == 0) {
 			continue;
 		}
-		asm_stmt = TO_BIG_ENDIAN(asm_stmt);
-		fwrite(&asm_stmt, 2, 1, out_fp);
+		if (bytes == 2) {
+			asm_stmt = TO_BIG_ENDIAN(asm_stmt);
+			fwrite(&asm_stmt, 2, 1, out_fp);
+		} else if (bytes == 1) {
+			b = asm_stmt;
+			fwrite(&b, 1, 1, out_fp);
+		}
 	}
 }
 

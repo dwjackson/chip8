@@ -22,6 +22,10 @@ char fsm_nextchar(struct fsm *fsm)
 enum state fsm_nextstate(struct fsm *fsm, char nextch)
 {
 	if (nextch == '\n') {
+		if (fsm->currstate == STATE_LABEL) {
+			/* Not a label, there was no colon (":") */
+			fsm->currstate = STATE_INSTRUCTION;
+		}
 		return STATE_DONE;
 	}
 	if (nextch == COMMENT_CHAR) {

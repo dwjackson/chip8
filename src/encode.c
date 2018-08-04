@@ -19,15 +19,18 @@ static unsigned short encode_ld(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels);
 static unsigned short encode_drw(struct statement *stmt);
 static unsigned short encode_add(struct statement *stmt);
+static unsigned short encode_sprite_byte(struct statement *stmt);
 
-unsigned short encode_statement(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels)
+int encode_statement(struct statement *stmt,
+	struct label labels[MAX_LABELS], size_t num_labels,
+	unsigned short *asm_stmt_p)
 {
 	unsigned short asm_stmt;
+	int bytes = 2;
 	char ins[INSTRUCTION_SIZE];
 
 	if (!stmt->has_instruction) {
-		return NO_INSTRUCTION;
+		return 0;
 	}
 
 	strcpy(ins, stmt->instruction);
@@ -54,12 +57,18 @@ unsigned short encode_statement(struct statement *stmt,
 		asm_stmt = encode_add(stmt);
 	} else if (strcmp(ins, "DRW") == 0) {
 		asm_stmt = encode_drw(stmt);
+	} else if (strcmp(ins, "EXIT") == 0) {
+		asm_stmt = 0x00FD;
+	} else if (strcmp(ins, ".SB") == 0) {
+		bytes = 1;
+		asm_stmt = encode_sprite_byte(stmt);
 	} else {
 		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
 	}
 	/* TODO */
-	return asm_stmt;
+	*asm_stmt_p = asm_stmt;
+	return bytes;
 }
 
 static unsigned short encode_jump(struct statement *stmt,
@@ -299,4 +308,20 @@ static unsigned short encode_add(struct statement *stmt)
 	}
 
 	return NOP;
+}
+
+static unsigned short encode_sprite_byte(struct statement *stmt)
+{
+	const char *arg;
+	unsigned short b;
+
+	if (stmt->num_args < 1) {
+		fprintf(stderr, "Too few arguments for .SB\n");
+		abort();
+	}
+
+	arg = stmt->args[0];
+	b = str_to_addr(arg);
+
+	return b;
 }
