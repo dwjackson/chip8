@@ -17,6 +17,7 @@ void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t
 unsigned short statement_length(struct statement *stmt);
 void print_statement(struct statement *stmt);
 void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], size_t num_labels);
+static void print_labels(struct label labels[MAX_LABELS], size_t num_labels);
 
 int main(int argc, char *argv[])
 {
@@ -56,6 +57,7 @@ void assemble(FILE *in_fp, FILE *out_fp)
 	size_t num_labels = 0;
 
 	find_labels(in_fp, labels, &num_labels);
+	/* print_labels(labels, num_labels); */ /* DEBUG */
 	rewind(in_fp);
 	write_assembly(in_fp, out_fp, labels, num_labels);
 }
@@ -122,7 +124,11 @@ void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t
 			break;
 		case STATE_INSTRUCTION:
 			strcpy(stmt->instruction, buf); 
-			stmt->has_instruction = 1;
+			if (strlen(stmt->instruction) > 0) {
+				stmt->has_instruction = 1;
+			} else {
+				stmt->has_instruction = 0;
+			}
 			break;
 		case STATE_WHITESPACE:
 			/* Do nothing */
@@ -229,3 +235,12 @@ void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], 
 	}
 }
 
+static void print_labels(struct label labels[MAX_LABELS], size_t num_labels)
+{
+	size_t i;
+	struct label *lbl;
+	for (i = 0; i < num_labels; i++) {
+		lbl = &(labels[i]);
+		printf("%s: %04X\n", lbl->text, lbl->addr);
+	}
+}

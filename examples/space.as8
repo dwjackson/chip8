@@ -5,6 +5,8 @@ ship:
 	.sb 0xD8
 	.sb 0x88
 	.sb 0x88
+
+start:
 LD I, ship
 LD V0, 10 ; ship x
 LD V1, 24 ; ship y
@@ -12,7 +14,7 @@ LD V3, 1  ; Store 1 in V3 for subtraction later
 
 loop:
 DRW V0, V1, 5
-LD Vx, K ; Wait for keypress
+LD V2, K ; Wait for keypress
 
 ; Right
 SNE V2, 0x09 ; Skip next if not "L"
