@@ -23,5 +23,6 @@ struct statement {
 };
 
 void statement_reset(struct statement *stmt);
+void print_statement(struct statement *stmt);
 
 #endif /* ASM8_H */

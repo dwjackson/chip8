@@ -15,7 +15,7 @@ void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_label
 void parse_statement(char line[LINE_SIZE], struct statement *stmt);
 void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t *buf_len);
 unsigned short statement_length(struct statement *stmt);
-static void print_statement(struct statement *stmt);
+void print_statement(struct statement *stmt);
 void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], size_t num_labels);
 
 int main(int argc, char *argv[])
@@ -182,7 +182,7 @@ void statement_reset(struct statement *stmt)
 	stmt->num_args = 0;
 }
 
-static void print_statement(struct statement *stmt)
+void print_statement(struct statement *stmt)
 {
 	unsigned short stmt_len = statement_length(stmt);
 	printf("LABEL: \"%s\"\n", stmt->label);

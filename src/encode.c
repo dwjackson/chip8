@@ -15,6 +15,8 @@ static unsigned short encode_call(struct statement *stmt,
 static unsigned short str_to_addr(const char *arg);
 static unsigned short encode_se(struct statement *stmt);
 static unsigned short encode_sne(struct statement *stmt);
+static unsigned short encode_ld(struct statement *stmt,
+	struct label labels[MAX_LABELS], size_t num_labels);
 
 unsigned short encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels)
@@ -44,6 +46,8 @@ unsigned short encode_statement(struct statement *stmt,
 		asm_stmt = encode_se(stmt);
 	} else if (strcmp(ins, "SNE") == 0) {
 		asm_stmt = encode_sne(stmt);
+	} else if (strcmp(ins, "LD") == 0) {
+		asm_stmt = encode_ld(stmt, labels, num_labels);
 	} else {
 		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
@@ -166,4 +170,66 @@ static unsigned short encode_sne(struct statement *stmt)
 		high = 0x4000;
 	}
 	return high | ((v << 8) & 0x0F00) | (c & 0x00FF);
+}
+
+static unsigned short encode_ld(struct statement *stmt,
+	struct label labels[MAX_LABELS], size_t num_labels)
+{
+	const char *dst;
+	const char *src;
+	unsigned short high;
+	unsigned short dst_byte;
+	unsigned short src_byte;
+	unsigned short addr;
+
+	if (stmt->num_args < 2) {
+		fprintf(stderr, "Too few arguments for SE\n");
+		abort();
+	}
+
+	dst = stmt->args[0];
+	src = stmt->args[1];
+
+	if ((dst[0] == 'V' || dst[0] == 'v')
+		&& (src[0] == 'V' || src[0] == 'v')) {
+		high = 0x8000;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		src_byte = strtol(&src[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00)
+			| (src_byte << 4 & 0x00F0) | 0x0000;
+	} else if (dst[0] == 'I') {
+		high = 0xA000;
+		if (!is_label(src, labels, num_labels, &addr)) {
+			addr = str_to_addr(src);
+		}
+		return high | (addr & 0x0FFF);
+	} else if ((dst[0] == 'V' || dst[0] == 'v')
+			&& (src[0] == 'd' || src[1] == 'D')
+			&& (src[1] == 't' || src[1] == 'T')) {
+		high = 0xF007;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00);
+	} else if ((dst[0] == 'V' || dst[0] == 'v')
+			&& (src[0] == 'k' || src[0] == 'K')) {
+		high = 0xF00A;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00);
+	} else if ((dst[0] == 'V' || dst[0] == 'v') 
+			&& strcmp(src, "[I]") == 0) {
+		high = 0xF065;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00);
+	} else if (dst[0] == 'V' || dst[0] == 'v') {
+		high = 0x6000;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		src_byte = strtol(&src[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00) | (src_byte & 0x00FF); 
+	} else {
+		fprintf(stderr, "Unimplemented LD\n");
+		print_statement(stmt);
+		abort();
+	}
+	/* TODO */
+
+	return NOP;
 }
