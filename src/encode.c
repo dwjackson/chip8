@@ -36,6 +36,8 @@ static unsigned short encode_and(struct statement *stmt);
 static unsigned short encode_xor(struct statement *stmt);
 static unsigned short encode_bitwise(struct statement *stmt,
 	unsigned short ins, const char *ins_name);
+static unsigned short encode_skp(struct statement *stmt);
+static unsigned short encode_sknp(struct statement *stmt);
 
 int encode_statement(struct statement *stmt,
 	struct label labels[MAX_LABELS], size_t num_labels,
@@ -81,6 +83,10 @@ int encode_statement(struct statement *stmt,
 		asm_stmt = encode_sub(stmt);
 	} else if (strcmp(ins, "DRW") == 0) {
 		asm_stmt = encode_drw(stmt);
+	} else if (strcmp(ins, "SKP") == 0) {
+		asm_stmt = encode_skp(stmt);
+	} else if (strcmp(ins, "SKNP") == 0) {
+		asm_stmt = encode_sknp(stmt);
 	} else if (strcmp(ins, "EXIT") == 0) {
 		asm_stmt = 0x00FD;
 	} else if (strcmp(ins, ".SB") == 0) {
@@ -405,4 +411,36 @@ static unsigned short encode_bitwise(struct statement *stmt,
 	src_byte = strtol(&src[1], NULL, 16);
 
 	return ins | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
+}
+
+static unsigned short encode_skp(struct statement *stmt)
+{
+	const char *reg;
+	unsigned char b;
+
+	if (stmt->num_args < 1) {
+		fprintf(stderr, "Too few arguments for SKP\n");
+		abort();
+	}
+
+	reg = stmt->args[0];
+	b = strtol(&reg[1], NULL, 16);
+
+	return 0xE09E | ((b << 8) & 0x0F00);
+}
+
+static unsigned short encode_sknp(struct statement *stmt)
+{
+	const char *reg;
+	unsigned char b;
+
+	if (stmt->num_args < 1) {
+		fprintf(stderr, "Too few arguments for SKNP\n");
+		abort();
+	}
+
+	reg = stmt->args[0];
+	b = strtol(&reg[1], NULL, 16);
+
+	return 0xE0A1 | ((b << 8) & 0x0F00);
 }
