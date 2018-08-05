@@ -242,7 +242,7 @@ static unsigned short encode_ld(struct statement *stmt,
 		src_byte = strtol(&src[1], NULL, 16);
 		return high | ((dst_byte << 8) & 0x0F00)
 			| (src_byte << 4 & 0x00F0) | 0x0000;
-	} else if (dst[0] == 'I') {
+	} else if (dst[0] == 'I' || dst[0] == 'i') {
 		high = 0xA000;
 		if (!is_label(src, labels, num_labels, &addr)) {
 			addr = str_to_addr(src);
@@ -269,6 +269,11 @@ static unsigned short encode_ld(struct statement *stmt,
 		dst_byte = strtol(&dst[1], NULL, 16);
 		src_byte = str_to_addr(src);
 		return high | ((dst_byte << 8) & 0x0F00) | (src_byte & 0x00FF); 
+	} else if ((dst[0] == 'D' || dst[0] == 'd')
+			&& (dst[1] == 't' || dst[1] == 'T')) {
+		high = 0xF015;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | ((dst_byte << 8) & 0x0F00);
 	} else {
 		fprintf(stderr, "Unimplemented LD\n");
 		print_statement(stmt);
