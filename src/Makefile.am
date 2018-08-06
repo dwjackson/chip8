@@ -11,7 +11,7 @@ bin_PROGRAMS = chip8 dis8 txt2hex dump8 asm8
 chip8_SOURCES = main.c chip8.c chip8.h instructions.c instructions.h
 chip8_LDADD = -lSDL2 -lpthread -lm
 
-dis8_SOURCES = dis8.c
+dis8_SOURCES = dis8.c disassemble.c disassemble.h chip8.h
 
 txt2hex_SOURCES = txt2hex.c chip8.h
 
