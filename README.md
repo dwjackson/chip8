@@ -26,6 +26,7 @@ This system consists of several small programs:
 * `dis8` - disassessembler for CHIP-8 binary files, outputs pseudo-assembly
 * `txt2hex` - convert a hexadecimal text file (hex digits) to a binary file
 * `dump8` - dump the hexadecimal content of a binary file
+* `asm8` - assemble CHIP-8 psuedoassembly
 
 ## Building
 
