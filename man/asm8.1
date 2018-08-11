@@ -43,7 +43,7 @@ and whose y coordinate is stored in Vy, specifying the sprite width in bytes.
 The sprite is loaded from the memory location currently stored in the I
 register. If any pixel that was previously on/white - i.e. set to 1 - is turned
 off/black - i.e. set to 0 - then set the VF register to one, otherwise set it
-to zero.
+to zero. This means that VF can be used to detect collisions.
 .It JP addr
 Set the program counter to the given address - i.e. jump to given address
 .It LD Vx, Vy
