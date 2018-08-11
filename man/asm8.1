@@ -36,9 +36,12 @@ by the given label
 .It CLS 
 Clear the screen (set every pixel to 0/black)
 .It DRW Vx, Vy, width
-Draw a sprite on screen at a location whose x coordinate
-is stored in Vx and whose y coordinate is stored in Vy, specifying the sprite
-width in bytes
+Draw a sprite on screen at a screen location whose x coordinate is stored in Vx
+and whose y coordinate is stored in Vy, specifying the sprite width in bytes.
+The sprite is loaded from the memory location currently stored in the I
+register. If any pixel that was previously on/white - i.e. set to 1 - is turned
+off/black - i.e. set to 0 - then set the VF register to one, otherwise set it
+to zero.
 .It JP addr
 Set the program counter to the given address - i.e. jump to given address
 .It LD Vx, Vy

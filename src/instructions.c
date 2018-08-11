@@ -195,11 +195,14 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 		for (j = 7; j >= 0; j--) {
 			disp_x = vx + (7 - j);
 			disp_y = vy + i;
-			if (is_within_display(disp_x, disp_y)) {
-				bit = BIT(sprite[i], j);
-				oldbit = chip->display[disp_y][disp_x];
-				currbit = bit ^ oldbit;
-				chip8_setpixel(chip, disp_x, disp_y, currbit);
+			if (!is_within_display(disp_x, disp_y)) {
+				continue;
+			}
+			bit = BIT(sprite[i], j);
+			oldbit = chip->display[disp_y][disp_x];
+			currbit = bit ^ oldbit;
+			chip8_setpixel(chip, disp_x, disp_y, currbit);
+			if (collision == 0x0) {
 				collision = oldbit == 0x1 && currbit == 0x0;
 			}
 		}
