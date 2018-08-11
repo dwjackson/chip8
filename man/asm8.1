@@ -13,6 +13,10 @@
 .Nd assembly CHIP-8 programs
 .Sh SYNOPSIS
 .Nm
+.Op Ar assembly_file
+.Pp
+Assemble the given assembly_file, output the result to
+.Qq a.out
 .Sh DESCRITION
 Assemble CHIP-8 programs.
 .Sh ASM8 INSTRUCTION SET
@@ -24,6 +28,8 @@ Vx
 Add the value stored in I to the value stored in Vy and store the result in I
 .It ADD Vx, Vy
 Add the value stored in Vx to the value stored in Vy and store the result in Vx
+.It AND Vx, Vy
+Perform a bitwise-AND of the values stored in Vx and Vy, store the result in Vx
 .It CALL label
 Store the program counter (PC) on the stack and jump to the address represented
 by the given label
