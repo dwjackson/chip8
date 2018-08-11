@@ -1,0 +1,71 @@
+	ld v0, 32 ; ant x
+	ld v1, 16 ; ant y
+	ld v2, 1  ; ant direction (1 = north, 2 = east, 3 = south, 4 = west)
+loop:
+	call draw_ant
+	ld v3, vf ; store collision 
+	; Was a white square if collision
+	sne v3, 1 ; skip if no collision
+	call turn_right
+	; Was a black square if no collision
+	se v3, 1 ; skip if was collision
+	call turn_left
+	call move_forward
+	ld v6, 0x4
+	sknp v6
+	exit
+	; ld v6, k ; DEBUG: wait for key
+	jp loop
+
+draw_ant:
+	ld i, ant_sprite
+	drw v0, v1, 1
+	ret
+
+turn_right:
+	add v2, 1
+	ld v5, 5 ; max direction + 1
+	ld v4, v2 ; v4 = temp
+	sub v4, v5
+	sne v4, 0
+	ld v2, 1
+	ret
+
+turn_left:
+	ld v4, 1
+	sub v2, v4
+	sne v2, 0
+	ld v2, 4
+	ret
+
+move_forward:
+	sne v2, 1
+	call go_north
+	sne v2, 2
+	call go_east
+	sne v2, 3
+	call go_south
+	sne v2, 4
+	call go_west
+	ret
+
+go_north:
+	ld v4, 1
+	sub v1, v4
+	ret
+
+go_east:
+	add v0, 1
+	ret
+
+go_south:
+	add v1, 1
+	ret
+
+go_west:
+	ld v4, 1
+	sub v0, v4
+	ret
+
+ant_sprite:
+	.sb 0x10

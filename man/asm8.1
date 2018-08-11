@@ -25,9 +25,11 @@ Assemble CHIP-8 programs.
 Add the value stored in Vx to the given immediate value and store the result in
 Vx
 .It ADD I, Vy
-Add the value stored in I to the value stored in Vy and store the result in I
+Add the value stored in I to the value stored in Vy and store the result in I.
+If there is an overflow, set VF to 1.
 .It ADD Vx, Vy
-Add the value stored in Vx to the value stored in Vy and store the result in Vx
+Add the value stored in Vx to the value stored in Vy and store the result in
+Vx. If there is an overflow, set VF to 1.
 .It AND Vx, Vy
 Perform a bitwise-AND of the values stored in Vx and Vy, store the result in Vx
 .It CALL label
@@ -46,6 +48,8 @@ to zero.
 Set the program counter to the given address - i.e. jump to given address
 .It LD Vx, Vy
 Copy the value stored in Vy into Vx
+.It LD Vx, K
+Wait for a key press and store the value of the key pressed in Vx
 .It OR Vx, Vy
 Perform a bitwise-OR of the values in Vx and Vy, store the result in Vx
 .It RET
@@ -56,10 +60,22 @@ immediate value
 .It SE Vx, Vy
 Skip the next instruction is the value stored in Vx is equal to the value
 stored in Vy
+.It SKNP Vx
+Skip the next instruction if the key represented by the value stored in Vx
+is not pressed
+.It SKP Vx
+Skip the next instruction if the key represented by the value stored inVx is
+pressed
 .It SNE Vx, imm
 Skip the next instruction if the value stored in Vx is not equal to the given
 immediate value
 .It SNE Vx, Vy 
 Skip the next instruction if the value stored in Vx is not equal to the value
 stored in Vy 
+.It SUB Vx, Vy
+Subtract the value stored in Vy from the value stored in Vx, store the result
+in Vx. If there is an underflow, set VF to 1.
+.It SUB Vx, Vy
+Subtract the value stored in Vx from the value stored in Vy, store the result
+in Vx. If there is an underflow, set VF to 1.
 .El
