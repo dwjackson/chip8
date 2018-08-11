@@ -1,0 +1,56 @@
+.\" This Source Code Form is subject to the terms of the Mozilla Public
+.\" License, v. 2.0. If a copy of the MPL was not distributed with this
+.\" file, You can obtain one at http://mozilla.org/MPL/2.0/.
+.\"
+.\" Copyright 2018 David Jackson
+
+.Dd August 11, 2018
+.Dt ASM8 1
+.Os
+.Sh NAME
+.Nm asm8
+.Op Ar assembly_file
+.Nd assembly CHIP-8 programs
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRITION
+Assemble CHIP-8 programs.
+.Sh ASM8 INSTRUCTION SET
+.Bl -tag
+.It ADD Vx, imm
+Add the value stored in Vx to the given immediate value and store the result in
+Vx
+.It ADD I, Vy
+Add the value stored in I to the value stored in Vy and store the result in I
+.It ADD Vx, Vy
+Add the value stored in Vx to the value stored in Vy and store the result in Vx
+.It CALL label
+Store the program counter (PC) on the stack and jump to the address represented
+by the given label
+.It CLS 
+Clear the screen (set every pixel to 0/black)
+.It DRW Vx, Vy, width
+Draw a sprite on screen at a location whose x coordinate
+is stored in Vx and whose y coordinate is stored in Vy, specifying the sprite
+width in bytes
+.It JP addr
+Set the program counter to the given address - i.e. jump to given address
+.It LD Vx, Vy
+Copy the value stored in Vy into Vx
+.It OR Vx, Vy
+Perform a bitwise-OR of the values in Vx and Vy, store the result in Vx
+.It RET
+Return from a function
+.It SE Vx, imm
+Skip the next instruction if the value stored in Vx is equal to the given
+immediate value
+.It SE Vx, Vy
+Skip the next instruction is the value stored in Vx is equal to the value
+stored in Vy
+.It SNE Vx, imm
+Skip the next instruction if the value stored in Vx is not equal to the given
+immediate value
+.It SNE Vx, Vy 
+Skip the next instruction if the value stored in Vx is not equal to the value
+stored in Vy 
+.El
