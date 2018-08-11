@@ -12,7 +12,7 @@ loop:
 	call turn_left
 	call move_forward
 	ld v6, 0x4
-	sknp v6
+	sknp v6 ; Exit when user presses "U"
 	exit
 	; ld v6, k ; DEBUG: wait for key
 	jp loop
