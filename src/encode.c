@@ -130,15 +130,25 @@ static unsigned short encode_jump(struct statement *stmt,
 {
 	unsigned short addr;
 	const char *arg;
+	unsigned short head;
 	if (stmt->num_args < 1) {
 		fprintf(stderr, "Too few arguments for JP\n");
 		abort();
 	}
 	arg = stmt->args[0];
+	head = 0x1000;
+	if ((arg[0] == 'V' || arg[0] == 'v') && arg[1] == '0') {
+		if (stmt->num_args < 2) {
+			fprintf(stderr, "Too few arguments for JP V0\n");
+			abort();
+		}
+		head = 0xB000;
+		arg = stmt->args[1];
+	}
 	if (!is_label(arg, assembler, &addr)) {
 		addr = str_to_addr(arg);
 	}
-	return 0x1000 | (addr & 0x0FFF);
+	return head | (addr & 0x0FFF);
 }
 
 static int is_label(const char *str, struct assembler *assembler,
