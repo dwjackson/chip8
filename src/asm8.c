@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 #include "asm8.h"
 #include "fsm.h"
 #include "encode.h"
@@ -19,6 +20,7 @@
 
 #define USAGE_FMT "Usage: %s [FILE_NAME]\n"
 #define BUFSIZE LINE_SIZE
+#define DEFAULT_OUT_FILE_NAME "a.out"
 
 void assemble(FILE *in_fp, FILE *out_fp);
 void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_labels); 
@@ -33,15 +35,35 @@ int main(int argc, char *argv[])
 {
 	char *in_file_name;
 	FILE *in_fp;
-	char out_file_name[] = "a.out";
+	char *out_file_name;
 	FILE *out_fp;
+	extern char *optarg;
+	extern int optind;
+	int opt;
+
+	out_file_name = NULL;
+	while ((opt = getopt(argc, argv, "o:")) > 0) {
+		switch (opt) {
+		case 'o':
+			out_file_name = malloc(strlen(optarg) + 1);
+			strcpy(out_file_name, optarg);
+			break;
+		default:
+			/* Do nothing */
+			break;
+		}
+	}
+	if (out_file_name == NULL) {
+		out_file_name = malloc(strlen(DEFAULT_OUT_FILE_NAME) + 1);
+		strcpy(out_file_name, DEFAULT_OUT_FILE_NAME);
+	}
 
 	if (argc < 2) {
 		printf(USAGE_FMT, argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
-	in_file_name = argv[1];
+	in_file_name = argv[optind];
 	in_fp = fopen(in_file_name, "r");
 	if (!in_fp) {
 		perror(in_file_name);
@@ -57,6 +79,7 @@ int main(int argc, char *argv[])
 
 	assemble(in_fp, out_fp);
 	fclose(in_fp);
+	free(out_file_name);
 
 	return 0;
 }
