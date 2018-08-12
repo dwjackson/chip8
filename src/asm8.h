@@ -11,6 +11,8 @@
 #ifndef ASM8_H
 #define ASM8_H
 
+#include <stdlib.h>
+
 #define LINE_SIZE 100
 #define LABEL_SIZE LINE_SIZE 
 #define MAX_LABELS 100
@@ -30,6 +32,11 @@ struct statement {
 	int has_instruction;
 	char args[MAX_ARGS][ARG_SIZE];
 	int num_args;
+};
+
+struct assembler {
+	struct label labels[MAX_LABELS];
+	size_t num_labels;
 };
 
 void statement_reset(struct statement *stmt);

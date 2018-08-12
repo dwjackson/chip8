@@ -23,12 +23,12 @@
 #define DEFAULT_OUT_FILE_NAME "a.out"
 
 void assemble(FILE *in_fp, FILE *out_fp);
-void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_labels); 
+void find_labels(FILE *in_fp, struct assembler *assembler);
 void parse_statement(char line[LINE_SIZE], struct statement *stmt);
 void fsm_tick(struct fsm *fsm, struct statement *stmt, char buf[BUFSIZE], size_t *buf_len);
 unsigned short statement_length(struct statement *stmt);
 void print_statement(struct statement *stmt);
-void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], size_t num_labels);
+void write_assembly(FILE *in_fp, FILE *out_fp, struct assembler *assembler);
 static void print_labels(struct label labels[MAX_LABELS], size_t num_labels);
 
 int main(int argc, char *argv[])
@@ -86,16 +86,16 @@ int main(int argc, char *argv[])
 
 void assemble(FILE *in_fp, FILE *out_fp)
 {
-	struct label labels[MAX_LABELS];
-	size_t num_labels = 0;
+	struct assembler assembler;
+	assembler.num_labels = 0;
 
-	find_labels(in_fp, labels, &num_labels);
+	find_labels(in_fp, &assembler);
 	/* print_labels(labels, num_labels); */ /* DEBUG */
 	rewind(in_fp);
-	write_assembly(in_fp, out_fp, labels, num_labels);
+	write_assembly(in_fp, out_fp, &assembler);
 }
 
-void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_labels)
+void find_labels(FILE *in_fp, struct assembler *assembler)
 {
 	char line[LINE_SIZE];
 	struct statement stmt;
@@ -105,10 +105,11 @@ void find_labels(FILE *in_fp, struct label labels[MAX_LABELS], size_t *num_label
 		statement_reset(&stmt);
 		parse_statement(line, &stmt);
 		if (stmt.has_label) {
-			strcpy(labels[*num_labels].text, stmt.label);
-			labels[*num_labels].addr = addr;
-			(*num_labels)++;
-			if (*num_labels >= MAX_LABELS) {
+			strcpy(assembler->labels[assembler->num_labels].text,
+				stmt.label);
+			assembler->labels[assembler->num_labels].addr = addr;
+			assembler->num_labels++;
+			if (assembler->num_labels >= MAX_LABELS) {
 				fprintf(stderr, "Too many labels\n");
 				abort();
 			}
@@ -242,7 +243,7 @@ void print_statement(struct statement *stmt)
 	printf("statement length = %hd\n", stmt_len);
 }
 
-void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], size_t num_labels)
+void write_assembly(FILE *in_fp, FILE *out_fp, struct assembler *assembler)
 {
 	char line[LINE_SIZE];
 	struct statement stmt;
@@ -254,7 +255,7 @@ void write_assembly(FILE *in_fp, FILE *out_fp, struct label labels[MAX_LABELS], 
 		statement_reset(&stmt);
 		parse_statement(line, &stmt);
 		/*print_statement(&stmt); */ /* DEBUG */
-		bytes = encode_statement(&stmt, labels, num_labels, &asm_stmt);
+		bytes = encode_statement(&stmt, assembler, &asm_stmt);
 		if (bytes == 0) {
 			continue;
 		}

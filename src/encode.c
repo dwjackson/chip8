@@ -15,94 +15,116 @@
 #include <ctype.h>
 
 #define NOP 0x0000
+#define MNEMONIC_SIZE 5
 
-static int is_label(const char *str, struct label labels[MAX_LABELS],
-	size_t num_labels, unsigned short *addr_p);
-static unsigned short encode_jump(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels);
-static unsigned short encode_call(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels);
+typedef unsigned short (*encoder)(struct statement *stmt,
+	struct assembler *assembler);
+
+struct instruction {
+	char mnemonic[MNEMONIC_SIZE];
+	encoder encode;
+	int bytes;
+};
+
+static int is_label(const char *str, struct assembler *assembler,
+	unsigned short *addr_p);
 static unsigned short str_to_addr(const char *arg);
-static unsigned short encode_se(struct statement *stmt);
-static unsigned short encode_sne(struct statement *stmt);
+
+static unsigned short encode_jump(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_call(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_se(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_sne(struct statement *stmt,
+	struct assembler *assembler);
 static unsigned short encode_ld(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels);
-static unsigned short encode_drw(struct statement *stmt);
-static unsigned short encode_add(struct statement *stmt);
-static unsigned short encode_sub(struct statement *stmt);
-static unsigned short encode_sprite_byte(struct statement *stmt);
-static unsigned short encode_or(struct statement *stmt);
-static unsigned short encode_and(struct statement *stmt);
-static unsigned short encode_xor(struct statement *stmt);
+	struct assembler *assembler);
+static unsigned short encode_drw(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_add(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_sub(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_sprite_byte(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_or(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_and(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_xor(struct statement *stmt,
+	struct assembler *assembler);
 static unsigned short encode_bitwise(struct statement *stmt,
 	unsigned short ins, const char *ins_name);
-static unsigned short encode_skp(struct statement *stmt);
-static unsigned short encode_sknp(struct statement *stmt);
+static unsigned short encode_skp(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_sknp(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_cls(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_ret(struct statement *stmt,
+	struct assembler *assembler);
+static unsigned short encode_exit(struct statement *stmt,
+	struct assembler *assembler);
 
-int encode_statement(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels,
+struct instruction instructions[] = {
+	{ "ADD", encode_add, 2 },
+	{ "AND", encode_and, 2 },
+	{ "CALL", encode_call, 2 },
+	{ "CLS", encode_cls, 2 },
+	{ "DRW", encode_drw, 2 },
+	{ "EXIT", encode_exit, 2 },
+	{ "JP", encode_jump, 2 },
+	{ "LD", encode_ld, 2 },
+	{ "OR", encode_or, 2 },
+	{ "RET", encode_ret, 2 },
+	{ "SE", encode_se, 2 },
+	{ "SKNP", encode_sknp, 2 },
+	{ "SKP", encode_skp, 2 },
+	{ "SNE", encode_sne, 2 },
+	{ "SUB", encode_sub, 2 },
+	{ "XOR", encode_xor, 2 },
+	{ ".SB", encode_sprite_byte, 1 }
+};
+
+
+int encode_statement(struct statement *stmt, struct assembler *assembler,
 	unsigned short *asm_stmt_p)
 {
 	unsigned short asm_stmt;
 	int bytes = 2;
 	char ins[INSTRUCTION_SIZE];
+	size_t i;
+	size_t instr_count = sizeof(instructions) / sizeof(instructions[0]);
 
 	if (!stmt->has_instruction) {
 		return 0;
 	}
 
 	strcpy(ins, stmt->instruction);
-	size_t i;
 	for (i = 0; i < strlen(ins); i++) {
 		ins[i] = toupper(ins[i]);
 	}
 
-	if (strcmp(ins, "CLS") == 0) {
-		asm_stmt = 0x00E0;
-	} else if (strcmp(ins, "RET") == 0) {
-		asm_stmt = 0x00EE;
-	} else if (strcmp(ins, "JP") == 0) {
-		asm_stmt = encode_jump(stmt, labels, num_labels);
-	} else if (strcmp(ins, "CALL") == 0) {
-		asm_stmt = encode_call(stmt, labels, num_labels);
-	} else if (strcmp(ins, "SE") == 0) {
-		asm_stmt = encode_se(stmt);
-	} else if (strcmp(ins, "SNE") == 0) {
-		asm_stmt = encode_sne(stmt);
-	} else if (strcmp(ins, "LD") == 0) {
-		asm_stmt = encode_ld(stmt, labels, num_labels);
-	} else if (strcmp(ins, "ADD") == 0) {
-		asm_stmt = encode_add(stmt);
-	} else if (strcmp(ins, "OR") == 0) {
-		asm_stmt = encode_or(stmt);
-	} else if (strcmp(ins, "AND") == 0) {
-		asm_stmt = encode_and(stmt);
-	} else if (strcmp(ins, "XOR") == 0) {
-		asm_stmt = encode_xor(stmt);
-	} else if (strcmp(ins, "SUB") == 0) {
-		asm_stmt = encode_sub(stmt);
-	} else if (strcmp(ins, "DRW") == 0) {
-		asm_stmt = encode_drw(stmt);
-	} else if (strcmp(ins, "SKP") == 0) {
-		asm_stmt = encode_skp(stmt);
-	} else if (strcmp(ins, "SKNP") == 0) {
-		asm_stmt = encode_sknp(stmt);
-	} else if (strcmp(ins, "EXIT") == 0) {
-		asm_stmt = 0x00FD;
-	} else if (strcmp(ins, ".SB") == 0) {
-		bytes = 1;
-		asm_stmt = encode_sprite_byte(stmt);
-	} else {
+	bytes = 0;
+	asm_stmt = NOP;
+	for (i = 0; i < instr_count; i++) {
+		if (strcmp(instructions[i].mnemonic, ins) == 0) {
+			asm_stmt = instructions[i].encode(stmt, assembler);
+			bytes = instructions[i].bytes;
+			break;
+		}
+	}
+	if (bytes == 0)  {
 		fprintf(stderr, "Unrecognized instruction: \"%s\"\n", ins);
 		asm_stmt = NOP;
 	}
-	/* TODO */
 	*asm_stmt_p = asm_stmt;
 	return bytes;
 }
 
 static unsigned short encode_jump(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels)
+	struct assembler *assembler)
 {
 	unsigned short addr;
 	const char *arg;
@@ -111,23 +133,23 @@ static unsigned short encode_jump(struct statement *stmt,
 		abort();
 	}
 	arg = stmt->args[0];
-	if (!is_label(arg, labels, num_labels, &addr)) {
+	if (!is_label(arg, assembler, &addr)) {
 		addr = str_to_addr(arg);
 	}
 	return 0x1000 | (addr & 0x0FFF);
 }
 
-static int is_label(const char *str, struct label labels[MAX_LABELS],
-	size_t num_labels, unsigned short *addr_p)
+static int is_label(const char *str, struct assembler *assembler,
+	unsigned short *addr_p)
 {
 	int is_label = 0;
 	size_t i;
 	const char *label;
-	for (i = 0; i < num_labels; i++) {
-		label = labels[i].text;
+	for (i = 0; i < assembler->num_labels; i++) {
+		label = assembler->labels[i].text;
 		if (strcmp(label, str) == 0) {
 			is_label = 1;
-			*addr_p = labels[i].addr;
+			*addr_p = assembler->labels[i].addr;
 		}
 	}
 	return is_label;
@@ -146,7 +168,7 @@ static unsigned short str_to_addr(const char *arg)
 }
 
 static unsigned short encode_call(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels)
+	struct assembler *assembler)
 {
 	unsigned short addr;
 	const char *arg;
@@ -155,19 +177,23 @@ static unsigned short encode_call(struct statement *stmt,
 		abort();
 	}
 	arg = stmt->args[0];
-	if (!is_label(arg, labels, num_labels, &addr)) {
+	if (!is_label(arg, assembler, &addr)) {
 		addr = str_to_addr(arg);
 	}
 	return 0x2000 | (addr & 0x0FFF);
 }
 
-static unsigned short encode_se(struct statement *stmt)
+static unsigned short encode_se(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *reg;
 	const char *cmp;
 	unsigned char v;
 	unsigned char c;
 	unsigned short high;
+
+	(void) assembler;
+
 	if (stmt->num_args < 2) {
 		fprintf(stderr, "Too few arguments for SE\n");
 		abort();
@@ -189,13 +215,17 @@ static unsigned short encode_se(struct statement *stmt)
 	return high | ((v << 8) & 0x0F00) | (c & 0x00FF);
 }
 
-static unsigned short encode_sne(struct statement *stmt)
+static unsigned short encode_sne(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *reg;
 	const char *cmp;
 	unsigned char v;
 	unsigned char c;
 	unsigned short high;
+
+	(void) assembler;
+
 	if (stmt->num_args < 2) {
 		fprintf(stderr, "Too few arguments for SE\n");
 		abort();
@@ -218,7 +248,7 @@ static unsigned short encode_sne(struct statement *stmt)
 }
 
 static unsigned short encode_ld(struct statement *stmt,
-	struct label labels[MAX_LABELS], size_t num_labels)
+	struct assembler *assembler)
 {
 	const char *dst;
 	const char *src;
@@ -244,7 +274,7 @@ static unsigned short encode_ld(struct statement *stmt,
 			| (src_byte << 4 & 0x00F0) | 0x0000;
 	} else if (dst[0] == 'I' || dst[0] == 'i') {
 		high = 0xA000;
-		if (!is_label(src, labels, num_labels, &addr)) {
+		if (!is_label(src, assembler, &addr)) {
 			addr = str_to_addr(src);
 		}
 		return high | (addr & 0x0FFF);
@@ -283,11 +313,14 @@ static unsigned short encode_ld(struct statement *stmt,
 	return NOP;
 }
 
-static unsigned short encode_drw(struct statement *stmt)
+static unsigned short encode_drw(struct statement *stmt,
+	struct assembler *assembler)
 {
 	unsigned short x;
 	unsigned short y;
 	unsigned short n;
+
+	(void) assembler;
 
 	if (stmt->num_args < 3) {
 		fprintf(stderr, "Too few arguments for DRW\n");
@@ -304,7 +337,8 @@ static unsigned short encode_drw(struct statement *stmt)
 		| (n & 0x000F);
 }
 
-static unsigned short encode_add(struct statement *stmt)
+static unsigned short encode_add(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *dst;
 	const char *src;
@@ -312,6 +346,8 @@ static unsigned short encode_add(struct statement *stmt)
 	unsigned short dst_byte;
 	unsigned short src_byte;
 	unsigned short b;
+
+	(void) assembler;
 
 	if (stmt->num_args < 2) {
 		fprintf(stderr, "Too few arguments for ADD\n");
@@ -346,10 +382,13 @@ static unsigned short encode_add(struct statement *stmt)
 	return NOP;
 }
 
-static unsigned short encode_sprite_byte(struct statement *stmt)
+static unsigned short encode_sprite_byte(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *arg;
 	unsigned short b;
+
+	(void) assembler;
 
 	if (stmt->num_args < 1) {
 		fprintf(stderr, "Too few arguments for .SB\n");
@@ -362,12 +401,15 @@ static unsigned short encode_sprite_byte(struct statement *stmt)
 	return b;
 }
 
-static unsigned short encode_sub(struct statement *stmt)
+static unsigned short encode_sub(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *dst;
 	const char *src;
 	unsigned short dst_byte;
 	unsigned short src_byte;
+
+	(void) assembler;
 
 	if (stmt->num_args < 2) {
 		fprintf(stderr, "Too few arguments for SUB\n");
@@ -382,18 +424,24 @@ static unsigned short encode_sub(struct statement *stmt)
 	return 0x8005 | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
 }
 
-static unsigned short encode_or(struct statement *stmt)
+static unsigned short encode_or(struct statement *stmt,
+	struct assembler *assembler)
 {
+	(void) assembler;
 	return encode_bitwise(stmt, 0x8001, "OR");
 }
 
-static unsigned short encode_and(struct statement *stmt)
+static unsigned short encode_and(struct statement *stmt,
+	struct assembler *assembler)
 {
+	(void) assembler;
 	return encode_bitwise(stmt, 0x8002, "AND");
 }
 
-static unsigned short encode_xor(struct statement *stmt)
+static unsigned short encode_xor(struct statement *stmt,
+	struct assembler *assembler)
 {
+	(void) assembler;
 	return encode_bitwise(stmt, 0x8003, "XOR");
 }
 
@@ -418,10 +466,13 @@ static unsigned short encode_bitwise(struct statement *stmt,
 	return ins | ((dst_byte << 8) & 0x0F00) | ((src_byte << 4) & 0x00F0);
 }
 
-static unsigned short encode_skp(struct statement *stmt)
+static unsigned short encode_skp(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *reg;
 	unsigned char b;
+
+	(void) assembler;
 
 	if (stmt->num_args < 1) {
 		fprintf(stderr, "Too few arguments for SKP\n");
@@ -434,10 +485,13 @@ static unsigned short encode_skp(struct statement *stmt)
 	return 0xE09E | ((b << 8) & 0x0F00);
 }
 
-static unsigned short encode_sknp(struct statement *stmt)
+static unsigned short encode_sknp(struct statement *stmt,
+	struct assembler *assembler)
 {
 	const char *reg;
 	unsigned char b;
+
+	(void) assembler;
 
 	if (stmt->num_args < 1) {
 		fprintf(stderr, "Too few arguments for SKNP\n");
@@ -448,4 +502,29 @@ static unsigned short encode_sknp(struct statement *stmt)
 	b = strtol(&reg[1], NULL, 16);
 
 	return 0xE0A1 | ((b << 8) & 0x0F00);
+}
+
+static unsigned short encode_cls(struct statement *stmt,
+	struct assembler *assembler)
+{
+	(void) stmt;
+	(void) assembler;
+	return 0x00E0;
+}
+
+static unsigned short encode_ret(struct statement *stmt,
+	struct assembler *assembler)
+{
+	(void) stmt;
+	(void) assembler;
+	return 0x00EE;
+}
+
+static unsigned short encode_exit(struct statement *stmt,
+	struct assembler *assembler)
+{
+	(void) stmt;
+	(void) assembler;
+
+	return 0x00FD;
 }
