@@ -66,6 +66,8 @@ static unsigned short encode_ret(struct statement *stmt,
 	struct assembler *assembler);
 static unsigned short encode_exit(struct statement *stmt,
 	struct assembler *assembler);
+static unsigned short encode_rnd(struct statement *stmt,
+	struct assembler *assembler);
 
 struct instruction instructions[] = {
 	{ "ADD", encode_add, 2 },
@@ -78,6 +80,7 @@ struct instruction instructions[] = {
 	{ "LD", encode_ld, 2 },
 	{ "OR", encode_or, 2 },
 	{ "RET", encode_ret, 2 },
+	{ "RND", encode_rnd, 2 },
 	{ "SE", encode_se, 2 },
 	{ "SKNP", encode_sknp, 2 },
 	{ "SKP", encode_skp, 2 },
@@ -526,4 +529,29 @@ static unsigned short encode_exit(struct statement *stmt,
 	(void) assembler;
 
 	return 0x00FD;
+}
+
+static unsigned short encode_rnd(struct statement *stmt,
+	struct assembler *assembler)
+{
+	const char *reg;
+	unsigned char v;
+	unsigned short b;
+
+	(void) assembler;
+
+	if (stmt->num_args < 1) {
+		fprintf(stderr, "Too few arguments for RND\n");
+		abort();
+	}
+
+	reg = stmt->args[0];
+	if (!(reg[0] == 'V' || reg[0] == 'v')) {
+		fprintf(stderr, "First argument to RND must be register\n");
+		abort();
+	}
+	v = strtol(&reg[1], NULL, 16);
+	b = str_to_addr(stmt->args[1]);
+
+	return 0xC000 | ((v << 8) & 0x0F00) | (b & 0x00FF);
 }
