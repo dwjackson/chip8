@@ -107,7 +107,6 @@ int encode_statement(struct statement *stmt, struct assembler *assembler,
 	}
 
 	bytes = 0;
-	asm_stmt = NOP;
 	for (i = 0; i < instr_count; i++) {
 		if (strcmp(instructions[i].mnemonic, ins) == 0) {
 			asm_stmt = instructions[i].encode(stmt, assembler);
