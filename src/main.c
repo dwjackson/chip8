@@ -70,7 +70,10 @@ int main(int argc, char *argv[])
 	c8renderer.render_display = render_display;
 	chip8_init(&chip, &keyboard, &c8renderer, check_kill);
 	file_name = argv[1];
-	chip8_load(&chip, file_name);
+	if (chip8_load(&chip, file_name) < 0) {
+		SDL_Quit();
+		exit(EXIT_FAILURE);
+	}
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
