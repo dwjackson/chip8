@@ -101,7 +101,7 @@ static void render_display(struct chip8 *chip)
 
 	for (i = 0; i < CHIP8_DISPLAYH; i++) {
 		for (j = 0; j < CHIP8_DISPLAYW; j++) {
-			bit = chip->display[i][j];
+			bit = chip8_getpixel(chip, j, i);
 			pixel.x = j * CHIP8_PIXEL_WIDTH;
 			pixel.y = i * CHIP8_PIXEL_HEIGHT;
 			pixel.w = CHIP8_PIXEL_WIDTH;

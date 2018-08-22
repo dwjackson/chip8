@@ -53,7 +53,7 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	memset(chip->stack, 0, CHIP8_STACKSIZE * sizeof(unsigned short));
 	for (i = 0 ; i < CHIP8_DISPLAYH; i++) {
 		for (j = 0; j < CHIP8_DISPLAYW; j++) {
-			chip->display[i][j] = 0x0;
+			chip8_setpixel(chip, j, i, 0x0);
 		}
 	}
 	for (i = 0; i < 16; i++) {
@@ -237,6 +237,11 @@ void chip8_setvf(struct chip8 *chip, byte val)
 void chip8_setpixel(struct chip8 *chip, byte x, byte y, byte val)
 {
 	chip->display[y][x] = val;
+}
+
+byte chip8_getpixel(struct chip8 *chip, byte x, byte y)
+{
+	return chip->display[y][x];
 }
 
 void chip8_halt(struct chip8 *chip)

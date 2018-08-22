@@ -62,6 +62,7 @@ int chip8_decode(struct chip8 *chip, unsigned short ins);
 int chip8_setv(struct chip8 *chip, byte index, byte value);
 void chip8_setvf(struct chip8 *chip, byte val);
 void chip8_setpixel(struct chip8 *chip, byte x, byte y, byte val);
+byte chip8_getpixel(struct chip8 *chip, byte x, byte y);
 void chip8_halt(struct chip8 *chip);
 
 #endif /* CHIP8_H */

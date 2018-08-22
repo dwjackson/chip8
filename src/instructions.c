@@ -199,7 +199,7 @@ void chip8_draw(struct chip8 *chip, unsigned short ins)
 				continue;
 			}
 			bit = BIT(sprite[i], j);
-			oldbit = chip->display[disp_y][disp_x];
+			oldbit = chip8_getpixel(chip, disp_x, disp_y);
 			currbit = bit ^ oldbit;
 			chip8_setpixel(chip, disp_x, disp_y, currbit);
 			if (collision == 0x0) {
