@@ -93,20 +93,27 @@ int chip8_load(struct chip8 *chip, char *file_name)
 
 void chip8_exec(struct chip8 *chip)
 {
-	unsigned short ins;
-
 	chip->pc = CHIP8_PROGSTART;
 	while (chip->pc + 2 < CHIP8_RAMBYTES && !chip->is_halted) {
-		ins = (*(unsigned short *)&((chip->ram[chip->pc])));
-		ins = TO_BIG_ENDIAN(ins);
-		chip->pc += 2;
-		if (chip8_decode(chip, ins) != 0) {
+		if (chip8_exec_instruction(chip) < 0) {
 			break;
 		}
-		chip->renderer->render_display(chip);
-		chip->check_kill(chip);
 	}
 	chip8_halt(chip);
+}
+
+int chip8_exec_instruction(struct chip8 *chip)
+{
+	unsigned short ins;
+	ins = (*(unsigned short *)&((chip->ram[chip->pc])));
+	ins = TO_BIG_ENDIAN(ins);
+	chip->pc += 2;
+	if (chip8_decode(chip, ins) != 0) {
+		return -1;
+	}
+	chip->renderer->render_display(chip);
+	chip->check_kill(chip);
+	return 0;
 }
 
 int chip8_decode(struct chip8 *chip, unsigned short ins)

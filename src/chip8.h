@@ -58,6 +58,7 @@ void chip8_init(struct chip8 *chip, struct chip8_keyboard *keyboard,
 	void (*check_kill)(struct chip8 *chip));
 int chip8_load(struct chip8 *chip, char *file_name);
 void chip8_exec(struct chip8 *chip);
+int chip8_exec_instruction(struct chip8 *chip);
 int chip8_decode(struct chip8 *chip, unsigned short ins);
 int chip8_setv(struct chip8 *chip, byte index, byte value);
 void chip8_setvf(struct chip8 *chip, byte val);
