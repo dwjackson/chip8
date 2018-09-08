@@ -104,16 +104,24 @@ void chip8_exec(struct chip8 *chip)
 
 int chip8_exec_instruction(struct chip8 *chip)
 {
-	unsigned short ins;
-	ins = (*(unsigned short *)&((chip->ram[chip->pc])));
-	ins = TO_BIG_ENDIAN(ins);
-	chip->pc += 2;
+	unsigned short ins = chip8_next_instruction(chip, 1);
 	if (chip8_decode(chip, ins) != 0) {
 		return -1;
 	}
 	chip->renderer->render_display(chip);
 	chip->check_kill(chip);
 	return 0;
+}
+
+unsigned short chip8_next_instruction(struct chip8 *chip, int inc_pc)
+{
+	unsigned short ins;
+	ins = (*(unsigned short *)&((chip->ram[chip->pc])));
+	ins = TO_BIG_ENDIAN(ins);
+	if (inc_pc) {
+		chip->pc += 2;
+	}
+	return ins;
 }
 
 int chip8_decode(struct chip8 *chip, unsigned short ins)
