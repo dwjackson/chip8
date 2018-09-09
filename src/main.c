@@ -26,6 +26,10 @@
 #define VOLUME 127.0
 #define SAMPLES 8192
 
+static void *setup_renderer(struct chip8_renderer *c8renderer);
+static void teardown_display();
+static void clear_screen(void *renderer_p);
+static void setup_keyboard(struct chip8_keyboard *keyboard);
 static void render_display(struct chip8 *chip);
 static void render_black(SDL_Renderer *renderer);
 static void render_white(SDL_Renderer *renderer);
@@ -38,20 +42,41 @@ int main(int argc, char *argv[])
 {
 	struct chip8 chip;
 	char *file_name;
-	SDL_Window *window = NULL;
-	SDL_Renderer *renderer = NULL;
-	int disph, dispw;
-	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
-	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
-	int ret;
 	struct chip8_keyboard keyboard;
 	struct chip8_renderer c8renderer;
 	pthread_t timer_thread;
+	void *renderer;
 
 	if (argc < 2) {
 		printf(USAGE_FMT, argv[0]);
 		exit(EXIT_FAILURE);
 	}
+	renderer = setup_renderer(&c8renderer);
+	setup_keyboard(&keyboard);
+	chip8_init(&chip, &keyboard, &c8renderer, check_kill);
+	file_name = argv[1];
+	if (chip8_load(&chip, file_name) < 0) {
+		teardown_display();
+		exit(EXIT_FAILURE);
+	}
+	clear_screen(renderer);
+	pthread_create(&timer_thread, NULL, timer_thread_update, &chip);
+	chip8_exec(&chip);
+	pthread_join(timer_thread, NULL);
+	teardown_display();
+
+	return 0;
+}
+
+static void *setup_renderer(struct chip8_renderer *c8renderer)
+{
+	int disph, dispw;
+	int ret;
+	SDL_Window *window = NULL;
+	SDL_Renderer *renderer = NULL;
+
+	dispw = DISPLAY_WPIXELS * CHIP8_PIXEL_WIDTH;
+	disph = DISPLAY_HPIXELS * CHIP8_PIXEL_HEIGHT;
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		perror("SDL_Init");
@@ -63,30 +88,23 @@ int main(int argc, char *argv[])
 		perror("SDL_CreateWindowAndRenderer");
 		exit(EXIT_FAILURE);
 	}
+	c8renderer->data = renderer;
+	c8renderer->render_display = render_display;
 
-	keyboard.waitkey = waitkey;
-	keyboard.is_key_down = is_key_down;
-	c8renderer.data = renderer;
-	c8renderer.render_display = render_display;
-	chip8_init(&chip, &keyboard, &c8renderer, check_kill);
-	file_name = argv[1];
-	if (chip8_load(&chip, file_name) < 0) {
-		SDL_Quit();
-		exit(EXIT_FAILURE);
-	}
+	return renderer;
+}
 
+static void setup_keyboard(struct chip8_keyboard *keyboard)
+{
+	keyboard->waitkey = waitkey;
+	keyboard->is_key_down = is_key_down;
+}
+
+static void clear_screen(void *renderer_p)
+{
+	SDL_Renderer *renderer = (SDL_Renderer *) renderer_p;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
-
-	pthread_create(&timer_thread, NULL, timer_thread_update, &chip);
-	
-	chip8_exec(&chip);
-
-	pthread_join(timer_thread, NULL);
-
-	SDL_Quit();
-
-	return 0;
 }
 
 static void render_display(struct chip8 *chip)
@@ -330,4 +348,9 @@ static void check_kill(struct chip8 *chip)
 	if (event.type == SDL_QUIT) {
 		chip8_halt(chip);
 	}
+}
+
+static void teardown_display()
+{
+	SDL_Quit();
 }
