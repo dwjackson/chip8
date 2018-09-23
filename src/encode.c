@@ -26,6 +26,8 @@ struct instruction {
 	int bytes;
 };
 
+static unsigned short address_from(const char *str,
+	struct assembler *assembler);
 static int is_label(const char *str, struct assembler *assembler,
 	unsigned short *addr_p);
 static unsigned short str_to_addr(const char *arg);
@@ -145,10 +147,22 @@ static unsigned short encode_jump(struct statement *stmt,
 		head = 0xB000;
 		arg = stmt->args[1];
 	}
-	if (!is_label(arg, assembler, &addr)) {
-		addr = str_to_addr(arg);
-	}
+	addr = address_from(arg, assembler);
 	return head | (addr & 0x0FFF);
+}
+
+static unsigned short address_from(const char *str, struct assembler *assembler)
+{
+	unsigned short addr;
+	if (is_label(str, assembler, &addr)) {
+		return addr;
+	}
+	addr = str_to_addr(str);
+	if (addr == 0x0000) {
+		fprintf(stderr, "Invalid label/address: %s\n", str);
+		abort();
+	}
+	return addr;
 }
 
 static int is_label(const char *str, struct assembler *assembler,
@@ -167,6 +181,10 @@ static int is_label(const char *str, struct assembler *assembler,
 	return is_label;
 }
 
+/*
+ * Convert a string-encoded numerical address to an actual address
+ * Return 0x0000 if the address is invalid
+ */
 static unsigned short str_to_addr(const char *arg)
 {
 	unsigned short addr;
@@ -189,9 +207,7 @@ static unsigned short encode_call(struct statement *stmt,
 		abort();
 	}
 	arg = stmt->args[0];
-	if (!is_label(arg, assembler, &addr)) {
-		addr = str_to_addr(arg);
-	}
+	addr = address_from(arg, assembler);
 	return 0x2000 | (addr & 0x0FFF);
 }
 
@@ -286,9 +302,7 @@ static unsigned short encode_ld(struct statement *stmt,
 			| (src_byte << 4 & 0x00F0) | 0x0000;
 	} else if (dst[0] == 'I' || dst[0] == 'i') {
 		high = 0xA000;
-		if (!is_label(src, assembler, &addr)) {
-			addr = str_to_addr(src);
-		}
+		addr = address_from(src, assembler);
 		return high | (addr & 0x0FFF);
 	} else if ((dst[0] == 'V' || dst[0] == 'v')
 			&& (src[0] == 'd' || src[1] == 'D')
