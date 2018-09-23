@@ -330,6 +330,15 @@ static unsigned short encode_ld(struct statement *stmt,
 		high = 0xF015;
 		dst_byte = strtol(&dst[1], NULL, 16);
 		return high | ((dst_byte << 8) & 0x0F00);
+	} else if (strcmp(dst, "[I]") == 0 || strcmp(dst, "[i]") == 0) {
+		high = 0xF055;
+		src_byte = strtol(&src[1], NULL, 16);
+		return high | (src_byte << 8);
+	} else if ((dst[0] == 'V' || dst[0] == 'v')
+		&& (strcmp(src, "[I]") == 0 || strcmp(src, "[i]") == 0)) {
+		high = 0xF065;
+		dst_byte = strtol(&dst[1], NULL, 16);
+		return high | (dst_byte << 8);
 	} else {
 		fprintf(stderr, "Unimplemented LD\n");
 		print_statement(stmt);
