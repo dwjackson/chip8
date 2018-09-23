@@ -320,7 +320,7 @@ static unsigned short encode_ld(struct statement *stmt,
 		high = 0xF065;
 		dst_byte = strtol(&dst[1], NULL, 16);
 		return high | ((dst_byte << 8) & 0x0F00);
-	} else if (dst[0] == 'V' || dst[0] == 'v') {
+	} else if ((dst[0] == 'V' || dst[0] == 'v') && isdigit(src[0])) {
 		high = 0x6000;
 		dst_byte = strtol(&dst[1], NULL, 16);
 		src_byte = str_to_addr(src);

@@ -172,7 +172,7 @@ void disassemble_instruction(instruction ins, unsigned short ins_addr)
 	} else if (nibble_h == 0x8) {
 		decode_8(ins);
 	} else if (nibble_h == 0x4) {
-		x = ins & 0x0F00 >> 8;
+		x = (ins & 0x0F00) >> 8;
 		y = ins & 0x00FF;
 		printf("SNE V%X, 0x%02x\n", x, y);
 	} else {
