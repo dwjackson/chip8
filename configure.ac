@@ -8,7 +8,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([chip8], [0.2.4], [noreply@dwjackson@users.noreply.github.com])
+AC_INIT([chip8], [0.2.5], [noreply@dwjackson@users.noreply.github.com])
 AC_CONFIG_SRCDIR([src/chip8.c])
 AC_CONFIG_HEADERS([config.h])
 
