@@ -22,6 +22,8 @@
 #define BUFSIZE LINE_SIZE
 #define DEFAULT_OUT_FILE_NAME "a.out"
 
+static int label_exists(struct assembler *assembler, const char *label);
+
 void assemble(FILE *in_fp, FILE *out_fp);
 void find_labels(FILE *in_fp, struct assembler *assembler);
 void parse_statement(char line[LINE_SIZE], struct statement *stmt);
@@ -101,10 +103,12 @@ void find_labels(FILE *in_fp, struct assembler *assembler)
 	struct statement stmt;
 	unsigned short stmt_len;
 	unsigned short addr = CHIP8_PROGSTART;
+	int label_already_exists;
 	while (fgets(line, LINE_SIZE, in_fp) != NULL) {
 		statement_reset(&stmt);
 		parse_statement(line, &stmt);
-		if (stmt.has_label) {
+		label_already_exists = label_exists(assembler, stmt.label);
+		if (stmt.has_label && !label_already_exists) {
 			strcpy(assembler->labels[assembler->num_labels].text,
 				stmt.label);
 			assembler->labels[assembler->num_labels].addr = addr;
@@ -113,6 +117,9 @@ void find_labels(FILE *in_fp, struct assembler *assembler)
 				fprintf(stderr, "Too many labels\n");
 				abort();
 			}
+		} else if (label_already_exists) {
+			fprintf(stderr, "Label already exists: %s\n",
+				stmt.label);
 		}
 		stmt_len = statement_length(&stmt);
 		addr += stmt_len;
@@ -277,4 +284,17 @@ static void print_labels(struct label labels[MAX_LABELS], size_t num_labels)
 		lbl = &(labels[i]);
 		printf("%s: %04X\n", lbl->text, lbl->addr);
 	}
+}
+
+static int label_exists(struct assembler *assembler, const char *label)
+{
+	size_t i;
+	const struct label *existing_label;
+	for (i = 0; i < assembler->num_labels; i++) {
+		existing_label = &(assembler->labels[i]);
+		if (strcmp(existing_label->text, label) == 0) {
+			return 1;
+		}
+	}
+	return 0;
 }
